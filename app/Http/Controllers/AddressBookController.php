@@ -99,9 +99,10 @@ class AddressBookController extends Controller
                     throw ExceptionHelper::somethingWentWrong();
             }
 
-            $dataToInsert["default_status"] = $addressCount ?
+            $dataToInsert["customer_id"] = $userId;
+            $dataToInsert["default_status"] = !$addressCount ?
                 1 :
-                $dataToInsert["default_status"];
+                ($dataToInsert["default_status"] ?? 0);
             $insertedAddressId =  AddressBook::create($dataToInsert)->id ?? null;
             $message = "Address Successfully Saved.";
 
@@ -142,8 +143,8 @@ class AddressBookController extends Controller
      */
     public function addressBook(Request $req)
     {
+        $userId = $req->user()->id;
         try {
-            $userId = $req->user()->id;
             $addresses = AddressBook::select(
                 "id as addressId",
                 "name",
@@ -165,7 +166,7 @@ class AddressBookController extends Controller
 
             if (!count($addresses))
                 throw ExceptionHelper::nonFound([
-                    "message" => "Address not found."
+                    "message" => "Address not found.",
                 ]);
 
             return response([
@@ -179,7 +180,7 @@ class AddressBookController extends Controller
                 "data" => $e->data,
                 "status" => $e->status,
                 "statusCode" => $e->statusCode,
-                "message" => $e->getMessage(),
+                "message" => $e->getMessage()
             ], $e->statusCode);
         }
     }

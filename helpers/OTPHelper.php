@@ -19,7 +19,7 @@ class OTPHelper
         $message = "Dear Customer,\nOTP to login to eRSPL is " . $otp . ". Please do not share with anyone.";
 
         // Fetch configuration from the database
-        $home = Home::find(1);
+        $home = Home::first();
         $smsVendor = $home->sms_vendor;
         $curlUrl = $smsVendor === "ZAP" ? $home->zap_key : $home->fortius_key;
 

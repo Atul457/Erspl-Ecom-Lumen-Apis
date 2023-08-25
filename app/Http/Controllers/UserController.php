@@ -7,6 +7,7 @@ use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +16,6 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
@@ -95,8 +95,7 @@ class UserController extends Controller
 
             $mobile = $data["mobile"];
             $password = $data["password"] ?? "";
-            $result = $user->select("*")->where("mobile", $mobile)->first();
-
+            $user = $user->select("*")->where("mobile", $mobile)->first();
 
             // If password is empty then using otp flow
             if (empty($data["password"])) {
@@ -121,98 +120,25 @@ class UserController extends Controller
                 ], 200);
             }
 
-            if (!Hash::check($password, $result->password))
+            if (!Hash::check($password, $user->password))
                 throw ExceptionHelper::unAuthorized([
                     "message" => "Invalid credentials."
                 ]);
 
-            if ($result->status == 0)
+            if ($user->status == 0)
                 throw ExceptionHelper::unAuthorized([
                     "message" => "Your account is suspended."
                 ]);
 
-            $token = "$result->createToken('ecom_token')->plainTextToken";
-
-            $response = [
-                'token' => $token,
-                'email' => $mobile,
-                'id' => $result->id,
-                'name' => $result->name,
-            ];
+            $token = Auth::login($user);
 
             return response([
                 "data" => null,
                 "status" => true,
                 "statusCode" => 200,
-                "data" => $response,
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "statusCode" => $e->statusCode,
-                "message" => $e->getMessage(),
-            ], $e->statusCode);
-        }
-    }
-
-
-
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    /**
-     * @TODO Document this
-     */
-    public function validateOtp(Request $req, User $user)
-    {
-        try {
-
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'digits' => ':attribute must be of :digits digits',
-                    'exists' => "User with provided :attribute doesn't exists, please signUp."
+                "data" => [
+                    "token" => $token
                 ],
-                [
-                    "otp" => "digits:4|required",
-                    "mobile" => "required|digits:10|exists:users",
-                ]
-            );
-
-            $user = User::where([
-                "otp" => $data["otp"],
-                "mobile" => $data["mobile"]
-            ])->first();
-
-            $otpIsValid = (bool)$user;
-
-            if (!$otpIsValid)
-                throw ExceptionHelper::unAuthorized([
-                    "message" => "Invalid OTP."
-                ]);
-
-            User::where("id", 1)->update(["attempt" => 1]);
-            $token = $user->createToken('ecom_token')->plainTextToken;
-
-            $response = [
-                'token' => $token,
-                'id' => $user->id,
-                'email' => $data["mobile"],
-                'first_name' => $user->first_name,
-            ];
-
-            return response([
-                "data" => null,
-                "status" => true,
-                "statusCode" => 200,
-                "data" => $response,
             ], 200);
         } catch (ValidationException $e) {
 
@@ -233,7 +159,7 @@ class UserController extends Controller
     }
 
 
-
+    
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @TODO Document this
@@ -256,10 +182,7 @@ class UserController extends Controller
     {
         try {
 
-            $res = $req->user()->currentAccessToken()->delete();
-
-            if (!$res)
-                throw ExceptionHelper::somethingWentWrong();
+            auth()->logout();
 
             return response([
                 "data" => null,
@@ -321,14 +244,14 @@ class UserController extends Controller
                     "attempt" => 1
                 ]);
 
-            $token = $user->createToken('ecom_token')->plainTextToken;
+            $token = Auth::login($user);
             $response["token"] = $token;
 
             return response([
                 "status" => true,
                 "statusCode" => 200,
                 "data" => $response,
-                "message" => "Logged in successfully.",
+                "message" => "Logged in successfully."
             ], 200);
         } catch (ValidationException $e) {
 

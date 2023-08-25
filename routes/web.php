@@ -24,19 +24,21 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     /**
      * @info Protected routes
      */
-    $router->group(['middleware' => 'auth'], function ($router) {
+    $router->group(['middleware' => 'auth:api'], function ($router) {
 
-          // Profile related
+        // Profile related
         $router->post('/logout', 'UserController@logout');
-        $router->post('/getProfile', 'UserController@getProfile');
+        $router->get('/getProfile', 'UserController@getProfile');
 
-         // Address
+        // Address
         $router->post('/addAddress', 'AddressBookController@addAddress');
         $router->post('/addressBook', 'AddressBookController@addressBook');
         $router->post('/editAddress', 'AddressBookController@editAddress');
         $router->post('/removeAddress', 'AddressBookController@removeAddress');
         $router->post('/defaultAddress', 'AddressBookController@defaultAddress');
 
+        // Wallet
+        $router->post('/checkWalletBalance', 'UserController@checkWalletBalance');
     });
 
 
@@ -45,12 +47,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     /**
      * @info Public routes
      */
-    $router->post('/', 'UserController@index');
-    $router->post('/validateOtp', 'UserController@validateOtp');
+    $router->get('/', 'UserController@index');
     $router->post('/resendOtp', 'UsersTempController@resendOtp');
     $router->post('/loginAccount', 'UserController@loginAccount');
     $router->post('/checkLoginOtp', 'UserController@checkLoginOtp');
     $router->post('/checkRegOtp', 'UsersTempController@checkRegOtp');
     $router->post('/signupAccount', 'UsersTempController@signupAccount');
-
 });

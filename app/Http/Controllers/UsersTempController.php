@@ -11,6 +11,7 @@ use App\Helpers\ExceptionHelper;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -180,7 +181,7 @@ class UsersTempController extends Controller
             if (!$user)
                 throw ExceptionHelper::somethingWentWrong();
 
-            $token = $user->createToken('ecom_token')->plainTextToken;
+            $token = Auth::login($user);
             $response["token"] = $token;
 
             return response([
