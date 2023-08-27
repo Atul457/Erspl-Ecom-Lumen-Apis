@@ -40,7 +40,7 @@ class Authenticate
                 "data" => null,
                 "status" => false,
                 "statusCode" => 401,
-                "message" => 'Unauthorized.',
+                "message" => 'this request is not authenticated.',
             ], 401);
         }
 

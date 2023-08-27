@@ -3,9 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Wallet;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\File;
 
 class WalletTableSeeder extends Seeder
 {
@@ -16,5 +14,23 @@ class WalletTableSeeder extends Seeder
      */
     public function run()
     {
+        Wallet::insert([
+            [
+                "customer_id" => 1,
+                "amount" => 50.00,
+                "payment_status" => 1,
+                "referral_code" => "9779755869ERSPL",
+                "referral_by" => "8837684275ERSPL",
+                "remark" => "Referral Bonus",
+            ],
+            [
+                "customer_id" => 2,
+                "amount" => 150.00,
+                "payment_status" => 2,
+                "referral_code" => "8837684275ERSPL",
+                "referral_by" => "9779755869ERSPL",
+                "remark" => "Referral Bonus",
+            ]
+        ]);
     }
 }

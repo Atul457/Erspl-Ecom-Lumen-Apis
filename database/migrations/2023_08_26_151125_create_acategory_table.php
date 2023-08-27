@@ -8,37 +8,38 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('industries', function (Blueprint $table) {
+        Schema::create('acategory', function (Blueprint $table) {
             $table->id();
             $table->string('name')->default("");
-            $table->string('offer_title')->nullable();
-            $table->integer('category_order')->nullable();
+            $table->unsignedBigInteger('industries_id')->nullable();
+            $table->longText('offer_title')->nullable();
             $table->longText('icon')->nullable();
             $table->longText('catlog')->nullable();
             $table->string('image')->nullable();
             $table->string('photo')->nullable();
-            $table->string('slug_url')->default("");
-            $table->longText('meta_title')->nullable();
-            $table->longText('meta_keywords')->nullable();
-            $table->longText('meta_description')->nullable();
+            $table->string('category_code')->nullable();
+            $table->integer('category_order')->nullable(); 
             $table->integer('status')->nullable()->default(1);
+            $table->longText('meta_title')->nullable();
+            $table->longText('meta_description')->nullable();
+            $table->longText('meta_keywords')->nullable();
+            $table->longText('slug_url')->nullable();
+            $table->longText('slider')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
+            
+            $table->foreign('industries_id')->references('id')->on('industries');
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('industries');
+        Schema::dropIfExists('acategory');
     }
 };

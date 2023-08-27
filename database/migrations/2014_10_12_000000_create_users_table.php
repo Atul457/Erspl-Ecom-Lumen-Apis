@@ -38,7 +38,8 @@ return new class extends Migration
             $table->tinyInteger('gender')->nullable()->comment('0 = Male, 1 = Female, 2 = Other');
             $table->integer('email_status')->default(0)->comment('0 = Verification pending, 1 = Email verified');
             $table->rememberToken();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

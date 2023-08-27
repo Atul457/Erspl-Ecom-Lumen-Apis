@@ -15,25 +15,25 @@ return new class extends Migration
     {
         Schema::create('wallet', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->integer('status');
-            $table->string('category_code');
-            $table->integer('category_order');
-            $table->string('icon')->nullable();
-            $table->string('image')->nullable();
-            $table->string('photo')->nullable();
-            $table->string('catlog')->nullable();
-            $table->string('slider')->default("");
-            $table->string('slug_url')->default("");
-            $table->string('meta_title')->default("");
-            $table->string('offer_title')->nullable();
-            $table->unsignedBigInteger('industries_id');
-            $table->string('meta_keywords')->default("");
-            $table->string('meta_description')->default("");
-            $table->timestamps();
+            $table->unsignedBigInteger('customer_id')->nullable();
+            $table->string('order_reference')->nullable();
+            $table->string('order_id')->nullable();
+            $table->string('invoice_id')->nullable();
+            $table->float('amount')->nullable();
+            $table->text('remark')->nullable();
+            $table->string('payment_status')->nullable()->comment("1=credit 2=debit");
+            $table->string('referral_code')->nullable();
+            $table->string('referral_by')->nullable();
+            $table->string('txn_id')->nullable();
+            $table->dateTime('txn_date')->nullable();
+            $table->string('payment_mode')->nullable();
+            $table->dateTime('date')->nullable();
+            $table->integer('status')->nullable();
+            
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
 
-            // Define foreign key relationship
-            $table->foreign('industries_id')->references('id')->on('industries');
+            $table->foreign('customer_id')->references('id')->on('users');
         });
     }
 

@@ -307,7 +307,9 @@ class UsersTempController extends Controller
             OTPHelper::sendOTP($data["otp"], $data["mobile"]);
 
             return response([
-                "data" => null,
+                "data" => [
+                    "otp" => $data["otp"]
+                ],
                 "status" => true,
                 "statusCode" => 200,
                 "messsage" => "OTP Sent Successfully."

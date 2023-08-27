@@ -30,10 +30,11 @@ return new class extends Migration
             $table->tinyInteger('default_status')->default(0);
             $table->integer('address_type')->nullable()->comment("1 = home, 2 = work, 3 = other");
 
-            // Keys
-            $table->foreign('customer_id')->references('id')->on('users');
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
 
-            $table->timestamps();
+            $table->foreign('customer_id')->references('id')->on('users');
+            
         });
     }
 

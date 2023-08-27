@@ -55,7 +55,8 @@ return new class extends Migration
             $table->string("notification_key")->collation('utf8_general_ci');
             $table->longText("footer_description")->collation('utf8_general_ci');
             $table->integer("delivery_type")->comment("1=Free, 2=Paid");
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

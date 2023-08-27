@@ -36,7 +36,8 @@ return new class extends Migration
             $table->integer('status')->default(1)->comment('0 = Inactive, 1 = Active');
             $table->tinyInteger('gender')->nullable()->comment('0 = Male, 1 = Female, 2 = Other');
             $table->integer('email_status')->default(0)->comment('0 = Verification pending, 1 = Email verified');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

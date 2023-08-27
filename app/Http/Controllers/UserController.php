@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\UtilityHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,6 @@ class UserController extends Controller
      */
     public function index()
     {
-
         return response()->json([
             "data" => null,
             "status" => true,
@@ -297,64 +297,4 @@ class UserController extends Controller
         ]);
     }
 
-
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    /**
-     * @TODO Document this
-     */
-    public function checkWalletBalance(Request $req)
-    {
-        $data_ = null;
-        $status = false;
-        $message = "Success";
-        $userId = $req->user()->id;
-
-        try {
-
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'numeric' => ':attribute must be be a number',
-                ],
-                [
-                    "orderTotal" => "numeric|required"
-                ]
-            );
-
-            $result = DB::select(
-                'CALL check_balance(?, ?)',
-                [$userId, $data["orderTotal"]]
-            );
-            $result = $result[0];
-
-            if ($result->is_insufficient_balance) {
-                $message = "Insuficient balance";
-                $data_ = [];
-                $data_["requiredBalance"] = floatval($result->required_balance);
-            } else
-                $status = true;
-
-            return response([
-                "data" => $data_,
-                "status" => $status,
-                "statusCode" => 200,
-                "message" => $message,
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
-    }
 }

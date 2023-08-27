@@ -38,7 +38,20 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/defaultAddress', 'AddressBookController@defaultAddress');
 
         // Wallet
-        $router->post('/checkWalletBalance', 'UserController@checkWalletBalance');
+        $router->post('/checkWalletBalance', 'WalletController@checkWalletBalance');
+        
+        // Category
+        $router->post('/categoryList', 'ACategoryController@categoryList');
+        $router->post('/searchCategoryList', 'ACategoryController@searchCategoryList');
+        $router->post('/subCategoryList', 'ProductController@subCategoryList');
+        
+        // Notification
+        $router->post('/notificationList', 'NotificationController@notificationList');
+        
+        // Referral
+        $router->post('/referralList', 'WalletController@referralList');
+
+
     });
 
 
