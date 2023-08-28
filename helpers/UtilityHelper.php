@@ -11,7 +11,7 @@ class UtilityHelper
     public static function getDistanceBetweenPlaces(
         array $latLongFrom,
         array $latLongTo,
-        string $unit
+        string $unit = "k"
     ) {
 
         if ($unit === "m")

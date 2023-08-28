@@ -121,7 +121,6 @@ class WalletController extends Controller
                 "messsage" => null
             ], 200);
         } catch (ValidationException $e) {
-
             return response([
                 "data" => null,
                 "status" => false,
@@ -141,14 +140,66 @@ class WalletController extends Controller
 
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request  $req
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function rechargeWallet(Request $req)
     {
-        //
+        try {
+
+            $data = RequestValidator::validate(
+                $req->input(),
+                [
+                    'numeric' => ':attribute must be be a number'
+                ],
+                [
+                    "amount" => "numeric|required"
+                ]
+            );
+
+            $userId = $req->user()->id;
+            $amount = $data['amount'];
+            $date   = date('Y-m-d H:i:s');
+            $invoiceId = time().$userId;
+
+            $inserted = Wallet::insert([
+                "date" => $date,
+                "amount" => $amount,
+                "customer_id" => $userId,
+                "invoice_id" => $invoiceId,
+                "remark" => "Wallet Recharge",
+                "payment_status" => 1,
+            ]);
+
+            if (!$inserted)
+                throw ExceptionHelper::somethingWentWrong([
+                    "message" => "Something went wrong. Try Again"
+                ]);
+
+            return response([
+                "data" => [
+                    "orderId" => round($invoiceId)
+                ],
+                "status" =>  true,
+                "statusCode" => 200,
+                "messsage" => "Request Received"
+            ], 200);
+        } catch (ValidationException $e) {
+
+            return response([
+                "data" => null,
+                "status" => false,
+                "statusCode" => 422,
+                "message" => $e->getMessage(),
+            ], 422);
+        } catch (ExceptionHelper $e) {
+            return response([
+                "data" => $e->data,
+                "status" => $e->status,
+                "message" => $e->getMessage(),
+                "statusCode" => $e->statusCode,
+            ], $e->statusCode);
+        }
     }
 
     /**

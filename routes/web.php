@@ -38,6 +38,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/defaultAddress', 'AddressBookController@defaultAddress');
 
         // Wallet
+        $router->post('/rechargeWallet', 'WalletController@rechargeWallet');
         $router->post('/checkWalletBalance', 'WalletController@checkWalletBalance');
         
         // Category
@@ -50,6 +51,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         
         // Referral
         $router->post('/referralList', 'WalletController@referralList');
+        
+        // Shop
+        $router->post('/shopList', 'ShopController@shopList');
+        $router->post('/removeFav', 'FavShopController@removeFav');
+        $router->post('/addFavShop', 'FavShopController@addFavShop');
 
 
     });
