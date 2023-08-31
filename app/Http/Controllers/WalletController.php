@@ -108,7 +108,7 @@ class WalletController extends Controller
             $resultCount = count($referralList);
 
             if ($resultCount === 0)
-                throw ExceptionHelper::nonFound([
+                throw ExceptionHelper::notFound([
                     "message" => "list not found."
                 ]);
 

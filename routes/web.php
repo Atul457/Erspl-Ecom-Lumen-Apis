@@ -54,8 +54,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         
         // Shop
         $router->post('/shopList', 'ShopController@shopList');
+        $router->post('/shopDetail', 'ShopController@shopDetail');
         $router->post('/removeFav', 'FavShopController@removeFav');
         $router->post('/addFavShop', 'FavShopController@addFavShop');
+        $router->post('/nearestShopList', 'ShopController@nearestShopList');
 
 
     });

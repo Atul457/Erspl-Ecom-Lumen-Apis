@@ -84,7 +84,7 @@ class ACategoryController extends Controller
                 ->toArray();
 
             if (!count($categoryList))
-                throw ExceptionHelper::nonFound([
+                throw ExceptionHelper::notFound([
                     "message" => "Category List Not Found."
                 ]);
 

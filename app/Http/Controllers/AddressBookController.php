@@ -165,7 +165,7 @@ class AddressBookController extends Controller
                 ->toArray();
 
             if (!count($addresses))
-                throw ExceptionHelper::nonFound([
+                throw ExceptionHelper::notFound([
                     "message" => "Address not found.",
                 ]);
 

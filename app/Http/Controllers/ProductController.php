@@ -49,7 +49,7 @@ class ProductController extends Controller
                 ->toArray();
 
             if (!count($distinctSubCategories))
-                throw ExceptionHelper::nonFound([
+                throw ExceptionHelper::notFound([
                     "message" => "Sub Category List Not Found."
                 ]);
 

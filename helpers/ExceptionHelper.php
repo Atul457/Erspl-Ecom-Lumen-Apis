@@ -61,7 +61,7 @@ class ExceptionHelper extends Exception
     /**
      * @TODO Document this
      */
-    public static function nonFound(array $errorInfo = [])
+    public static function notFound(array $errorInfo = [])
     {
         return new ExceptionHelper([
             "status" => false,
