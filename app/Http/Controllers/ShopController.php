@@ -592,4 +592,71 @@ class ShopController extends Controller
             ], $e->statusCode);
         }
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function searchShopDetail(Request $req)
+    {
+
+        try {
+
+            $data = RequestValidator::validate(
+                $req->input(),
+                [
+                    'numeric' => ':attribute must be a number'
+                ],
+                [
+                    "shopId" => "required|numeric",
+                    "search" => "required"
+                ]
+            );
+
+            $shopId = $data['shopId'];
+            $search = $data['search'];
+
+            $sqlProductData = Product::select("id")
+                ->where([
+                    "shop_id" => $shopId
+                ])
+                ->where(function ($query) use ($search) {
+                    $query->where("keywords", "LIKE", "%$search %")
+                        ->orWhere("keywords", "LIKE", "% $search%")
+                        ->orWhere("keywords", "LIKE", "% $search,%")
+                        ->orWhere("keywords", "LIKE", "%,$search%");
+                })
+                ->first();
+
+            if (!$sqlProductData)
+                throw ExceptionHelper::notFound([
+                    "message" => "Product Not Found."
+                ]);
+
+            return response([
+                "data" => [
+                    "productId" => $sqlProductData["id"]
+                ],
+                "status" =>  true,
+                "statusCode" => 200,
+                "messsage" => null
+            ], 200);
+        } catch (ValidationException $e) {
+            return response([
+                "data" => null,
+                "status" => false,
+                "statusCode" => 422,
+                "message" => $e->getMessage(),
+            ], 422);
+        } catch (ExceptionHelper $e) {
+            return response([
+                "data" => $e->data,
+                "status" => $e->status,
+                "message" => $e->getMessage(),
+                "statusCode" => $e->statusCode,
+            ], $e->statusCode);
+        }
+    }
 }

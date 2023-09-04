@@ -26,7 +26,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
      */
     $router->group(['middleware' => 'auth:api'], function ($router) {
 
-        // Profile related
+        // Profile
         $router->post('/logout', 'UserController@logout');
         $router->get('/getProfile', 'UserController@getProfile');
 
@@ -54,10 +54,29 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         
         // Shop
         $router->post('/shopList', 'ShopController@shopList');
+        $router->post('/addRating', 'RatingController@addRating'); 
         $router->post('/shopDetail', 'ShopController@shopDetail');
         $router->post('/removeFav', 'FavShopController@removeFav');
         $router->post('/addFavShop', 'FavShopController@addFavShop');
         $router->post('/nearestShopList', 'ShopController@nearestShopList');
+        $router->post('/searchShopDetail', 'ShopController@searchShopDetail');
+        
+        // Slider
+        $router->post('/sliderList', 'SliderController@sliderList');
+        
+        // Product
+        $router->post('/searchShopProduct', 'ProductController@searchShopProduct');
+        
+        // List
+        $router->post('/reasonList', 'CancelReasonController@reasonList'); 
+        
+        // Wishlist
+        $router->post('/wishlist', 'WishlistController@wishlist'); 
+        $router->post('/addWishlist', 'WishlistController@addWishlist'); 
+        $router->post('/removeWishlist', 'WishlistController@removeWishlist'); 
+        
+        // Cart
+        $router->post('/addCart', 'CartController@addCart'); 
 
 
     });

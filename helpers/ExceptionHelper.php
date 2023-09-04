@@ -70,4 +70,34 @@ class ExceptionHelper extends Exception
             "message" => $errorInfo["message"] ?? "Resource not found",
         ]);
     }
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @TODO Document this
+     */
+    public static function alreadyExists(array $errorInfo = [])
+    {
+        return new ExceptionHelper([
+            "status" => false,
+            "statusCode" => 409,
+            "data"  => $errorInfo["data"] ?? null,
+            "message" => $errorInfo["message"] ?? "Resource already exists",
+        ]);
+    }
+
+
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @TODO Document this
+     */
+    public static function unprocessable(array $errorInfo = [])
+    {
+        return new ExceptionHelper([
+            "status" => false,
+            "statusCode" => 422,
+            "data"  => $errorInfo["data"] ?? null,
+            "message" => $errorInfo["message"] ?? "Unprocessable Entity",
+        ]);
+    }
 }
