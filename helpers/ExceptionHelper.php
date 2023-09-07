@@ -22,7 +22,7 @@ class ExceptionHelper extends Exception
         $this->status = false;
         $this->data = $errorInfo["data"] ?? null;
         $this->statusCode = $errorInfo["statusCode"] ?? 500;
-        $this->message = $errorInfo["message"] ?? "Something went wrong";
+        $this->message = $errorInfo["message"] ?? "Someting went Wrong. Try Again";
     }
 
 
@@ -37,7 +37,7 @@ class ExceptionHelper extends Exception
             "status" => false,
             "statusCode" => 500,
             "data"  => $errorInfo["data"] ?? null,
-            "message" => $errorInfo["message"] ?? "Something went wrong",
+            "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again",
         ]);
     }
 
@@ -87,7 +87,7 @@ class ExceptionHelper extends Exception
     }
 
 
-      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @TODO Document this
      */
