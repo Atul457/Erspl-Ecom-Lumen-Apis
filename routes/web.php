@@ -77,6 +77,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         
         // Cart
         $router->post('/addCart', 'CartController@addCart'); 
+        $router->post('/cartList', 'CartController@cartList'); 
         $router->post('/removeCart', 'CartController@removeCart'); 
         $router->post('/repeatCart', 'CartController@repeatCart'); 
         $router->post('/updateCart', 'CartController@updateCart'); 
