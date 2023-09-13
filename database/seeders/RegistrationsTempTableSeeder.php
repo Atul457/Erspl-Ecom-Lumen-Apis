@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\UsersTemp;
+use App\Models\RegistrationTempController;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-class UsersTempTableSeeder extends Seeder
+class RegistrationsTempTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -26,7 +26,7 @@ class UsersTempTableSeeder extends Seeder
             "reg_type" => $defaultRegistrationType,
         ];
 
-        UsersTemp::insert([
+        RegistrationTempController::insert([
             array_merge($data, [
                 'first_name' => 'Ravi',
                 'last_name' => "Yadav",

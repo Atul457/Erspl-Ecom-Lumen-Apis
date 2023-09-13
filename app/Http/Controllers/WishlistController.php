@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\Product;
 use App\Models\Wishlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class WishlistController extends Controller
@@ -110,6 +111,9 @@ class WishlistController extends Controller
                 "messsage" => null
             ], 200);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+            
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -181,6 +185,9 @@ class WishlistController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+            
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -249,6 +256,9 @@ class WishlistController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+            
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

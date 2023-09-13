@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\UsersTemp;
+use App\Models\Registration;
+use App\Models\RegistrationTemp;
 use App\Helpers\RequestValidator;
 
 use App\Helpers\OTPHelper;
@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 
@@ -20,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * @TODO Document this
  */
-class UsersTempController extends Controller
+class RegistrationTempController extends Controller
 {
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,13 +31,13 @@ class UsersTempController extends Controller
     public function manageUserInTemp(array $dataToSave)
     {
         $whereQuery = ["mobile" => $dataToSave["mobile"]];
-        $exists = UsersTemp::where($whereQuery)->exists();
+        $exists = RegistrationTemp::where($whereQuery)->exists();
         $insertedOrUpdated = false;
 
         if (!$exists)
-            $insertedOrUpdated = UsersTemp::insert($dataToSave);
+            $insertedOrUpdated = RegistrationTemp::insert($dataToSave);
         else
-            $insertedOrUpdated =  (bool)UsersTemp::where($whereQuery)->update($dataToSave);
+            $insertedOrUpdated =  (bool)RegistrationTemp::where($whereQuery)->update($dataToSave);
 
         return $insertedOrUpdated;
     }
@@ -58,14 +59,14 @@ class UsersTempController extends Controller
             "existsInRegistrations" => false,
         ];
 
-        $user = User::where($whereQuery)->first();
+        $user = Registration::where($whereQuery)->first();
         $userWithTable["user"] =  $user;
         $userWithTable["existsInRegistrations"] =  $user ? true : false;
 
         if ($user)
             return $userWithTable;
 
-        $user = UsersTemp::where($whereQuery)->first();
+        $user = RegistrationTemp::where($whereQuery)->first();
         $userWithTable["user"] =  $user;
         $userWithTable["existsInRegistrations"] =  $user ? true : false;
 
@@ -103,7 +104,7 @@ class UsersTempController extends Controller
             else
                 OTPHelper::sendOTP($otp, $data["mobile"]);
 
-            $updated = User::where("mobile", $data["mobile"])->update(["otp" => $otp]);
+            $updated = Registration::where("mobile", $data["mobile"])->update(["otp" => $otp]);
 
             return response([
                 "data" => null,
@@ -120,6 +121,9 @@ class UsersTempController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -146,27 +150,27 @@ class UsersTempController extends Controller
                 $req->input(),
                 [
                     'digits' => ':attribute must be of :digits digits',
-                    'unique' => 'User with the provided :attribute already exists',
-                    'exists' => "User with provided :attribute doesn't exists, please signUp."
+                    'unique' => 'Registration with the provided :attribute already exists',
+                    'exists' => "Registration with provided :attribute doesn't exists, please signUp."
                 ],
                 [
                     "otp" => "digits:4|required",
-                    "mobile" => "required|digits:10|exists:tbl_registration_temp|unique:users",
+                    "mobile" => "required|digits:10|exists:tbl_registration_temp|unique:tbl_registration",
                 ]
             );
 
             $whereQuery["mobile"] = $data["mobile"];
-            $user = UsersTemp::where($whereQuery)->first()->toArray();
+            $user = RegistrationTemp::where($whereQuery)->first()->toArray();
 
             if ($user["otp"] !== $data["otp"]) {
-                UsersTemp::where($whereQuery)->update([
+                RegistrationTemp::where($whereQuery)->update([
                     "attempt" => $user["attempt"] + 1
                 ]);
                 throw ExceptionHelper::unAuthorized([
                     "message" => "Invalid OTP",
                 ]);
             } else
-                UsersTemp::where($whereQuery)->update([
+                RegistrationTemp::where($whereQuery)->update([
                     "attempt" => 1
                 ]);
 
@@ -175,8 +179,8 @@ class UsersTempController extends Controller
             unset($user["created_at"]);
             unset($user["updated_at"]);
 
-            $user = User::insert($user);
-            $user = User::where($whereQuery)->first();
+            $user = Registration::insert($user);
+            $user = Registration::where($whereQuery)->first();
 
             if (!$user)
                 throw ExceptionHelper::somethingWentWrong();
@@ -199,6 +203,9 @@ class UsersTempController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -216,7 +223,7 @@ class UsersTempController extends Controller
      */
     public function isDefaultMobile($mobile)
     {
-        $numbersWithDefaultOTP = ["8837684275", "9779755869", "6280926975"];
+        $numbersWithDefaultOTP = [];
         // $numbersWithDefaultOTP = ["9779755869", "6280926975"];
         $isDefaultNumber = in_array($mobile, $numbersWithDefaultOTP);
         return $isDefaultNumber ? 1 : 0;
@@ -232,7 +239,7 @@ class UsersTempController extends Controller
     {
         if (empty($referral_by))
             return true;
-        $referralByIsValid = User::where("referral_code", $referral_by)->exists();
+        $referralByIsValid = Registration::where("referral_code", $referral_by)->exists();
         return  $referralByIsValid;
     }
 
@@ -260,7 +267,7 @@ class UsersTempController extends Controller
                     'required' => ':attribute is a required field',
                     'digits' => ':attribute must be of :digits digits',
                     'min' => ':attribute must be of at least :min characters',
-                    'unique' => 'User with the provided :attribute already exists',
+                    'unique' => 'Registration with the provided :attribute already exists',
                     'size' => ':attribute must be of :size alpha numeric characters',
                 ],
                 [
@@ -271,9 +278,9 @@ class UsersTempController extends Controller
                     'password' => 'required|min:6',
                     "referral_by" => "string|size:15",
                     "first_name" => "required|string|min:2",
-                    'email' => 'required|email|unique:users,email',
-                    "alt_mobile" => "unique:users,mobile|digits:10",
-                    "mobile" => "required|unique:users,mobile|digits:10",
+                    'email' => 'required|email|unique:tbl_registration,email',
+                    "alt_mobile" => "unique:tbl_registration,mobile|digits:10",
+                    "mobile" => "required|unique:tbl_registration,mobile|digits:10",
                 ]
             );
 
@@ -323,6 +330,9 @@ class UsersTempController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+            
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

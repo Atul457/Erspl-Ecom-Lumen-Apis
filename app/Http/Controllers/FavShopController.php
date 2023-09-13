@@ -6,6 +6,7 @@ use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\FavShop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class FavShopController extends Controller
@@ -69,6 +70,9 @@ class FavShopController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -123,6 +127,9 @@ class FavShopController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+            
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

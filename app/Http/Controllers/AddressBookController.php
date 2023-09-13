@@ -8,8 +8,9 @@ use App\Models\AddressBook;
 use App\Helpers\RequestValidator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-
+use Monolog\Logger;
 
 class AddressBookController extends Controller
 {
@@ -101,8 +102,7 @@ class AddressBookController extends Controller
 
             $dataToInsert["customer_id"] = $userId;
             $dataToInsert["default_status"] = !$addressCount ?
-                1 :
-                ($dataToInsert["default_status"] ?? 0);
+                1 : ($dataToInsert["default_status"] ?? 0);
             $insertedAddressId =  AddressBook::create($dataToInsert)->id ?? null;
             $message = "Address Successfully Saved.";
 
@@ -126,6 +126,9 @@ class AddressBookController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -144,6 +147,7 @@ class AddressBookController extends Controller
     public function addressBook(Request $req)
     {
         $userId = $req->user()->id;
+
         try {
             $addresses = AddressBook::select(
                 "id as addressId",
@@ -176,6 +180,9 @@ class AddressBookController extends Controller
                 "data" => $addresses,
             ], 200);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -242,6 +249,9 @@ class AddressBookController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

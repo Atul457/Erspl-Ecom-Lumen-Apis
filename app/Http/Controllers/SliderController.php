@@ -6,6 +6,7 @@ use App\Helpers\ExceptionHelper;
 use App\Models\Slider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class SliderController extends Controller
@@ -41,6 +42,9 @@ class SliderController extends Controller
                 "messsage" => null
             ], 200);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

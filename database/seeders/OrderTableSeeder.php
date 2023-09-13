@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Shop;
-use App\Models\User;
+use App\Models\Registration;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
@@ -24,7 +24,7 @@ class OrderTableSeeder extends Seeder
         foreach ($orderTableItems as $order) {
             $shop = Shop::inRandomOrder()->first()->toArray();
             $productId = Product::inRandomOrder()->first()["id"];
-            $customer = User::inRandomOrder()->first()->toArray();
+            $customer = Registration::inRandomOrder()->first()->toArray();
 
             $order["shop_id"] = $shop["id"];
             $order["customer_id"] = $customer["id"];

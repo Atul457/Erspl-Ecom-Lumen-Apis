@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\Home;
+use Illuminate\Support\Facades\Log;
 
 class OTPHelper
 {
@@ -23,7 +24,7 @@ class OTPHelper
         $message = "";
 
         // Customize message and other variables
-        if ($smsVendor === "ZAP") {
+        if ($smsVendor == "ZAP") {
             $curlUrl = $home->zap_key;
             $message = "Dear Customer,\nlogin to eRSPL OTP is $otp.Please do not share with anyone.";
         } else {
@@ -50,6 +51,9 @@ class OTPHelper
         $response = curl_exec($curl);
         $err = curl_error($curl);
         curl_close($curl);
+
+        if(!empty($err))
+            Log::error($err);
 
         // Process the response or handle errors
         return [

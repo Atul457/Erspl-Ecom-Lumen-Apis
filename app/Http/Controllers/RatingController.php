@@ -6,6 +6,7 @@ use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Rating;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class RatingController extends Controller
@@ -28,7 +29,7 @@ class RatingController extends Controller
                 ],
                 [
                     "shopId" => "required|numeric|exists:shop,id",
-                    "userId" => "required|numeric|exists:users,id",
+                    "userId" => "required|numeric|exists:tbl_registration,id",
                     "orderId" => "required|numeric",
                     "rating" => "numeric",
                     "deliveryId" => "required|numeric",
@@ -108,6 +109,9 @@ class RatingController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

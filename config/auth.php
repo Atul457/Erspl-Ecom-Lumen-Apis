@@ -3,20 +3,20 @@
 return [
     'defaults' => [
         'guard' => 'api',
-        'passwords' => 'users',
+        'passwords' => 'tbl_registration',
     ],
 
     'guards' => [
         'api' => [
             'driver' => 'jwt',
-            'provider' => 'users',
+            'provider' => 'tbl_registration',
         ],
     ],
 
     'providers' => [
-        'users' => [
+        'tbl_registration' => [
             'driver' => 'eloquent',
-            'model' => \App\Models\User::class
+            'model' => \App\Models\Registration::class
         ]
     ]
 ];

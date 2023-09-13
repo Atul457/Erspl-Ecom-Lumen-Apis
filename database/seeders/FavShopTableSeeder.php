@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\FavShop;
 use App\Models\Shop;
-use App\Models\User;
+use App\Models\Registration;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class FavShopTableSeeder extends Seeder
         $dataArray = json_decode($jsonContent, true);
         foreach ($dataArray as $_) {
             $shopId = Shop::inRandomOrder()->first()["id"];
-            $userId = User::inRandomOrder()->first()["id"];
+            $userId = Registration::inRandomOrder()->first()["id"];
 
             $dataArray_[] = [
                 "user_id" => $userId,

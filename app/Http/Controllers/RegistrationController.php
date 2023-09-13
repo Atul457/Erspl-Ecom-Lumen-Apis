@@ -6,16 +6,17 @@ use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
 use App\Helpers\UtilityHelper;
-use App\Models\User;
+use App\Models\Registration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
-class UserController extends Controller
+class RegistrationController extends Controller
 {
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,7 +73,7 @@ class UserController extends Controller
     /**
      * @TODO Document this
      */
-    public function loginAccount(Request $req, User $user)
+    public function loginAccount(Request $req, Registration $user)
     {
 
         $defaultOtp = "0000";
@@ -85,10 +86,10 @@ class UserController extends Controller
                 [
                     'digits' => ':attribute must be of :digits digits',
                     'min' => ':attribute must be of at least :min characters',
-                    'exists' => "User with :attribute doesn't exists, please signUp."
+                    'exists' => "Registration with :attribute doesn't exists, please signUp."
                 ],
                 [
-                    "mobile" => "required|digits:10|exists:users",
+                    "mobile" => "required|digits:10|exists:tbl_registration",
                     'password' => 'min:6',
                 ]
             );
@@ -105,7 +106,7 @@ class UserController extends Controller
                 else
                     OTPHelper::sendOTP($otp, $mobile);
 
-                $updated = User::where("mobile", $mobile)->update([
+                $updated = Registration::where("mobile", $mobile)->update([
                     "otp" => $otp
                 ]);
 
@@ -149,6 +150,9 @@ class UserController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -166,7 +170,7 @@ class UserController extends Controller
      */
     public function isDefaultMobile($mobile)
     {
-        $numbersWithDefaultOTP = ["8837684275", "9779755869", "6280926975"];
+        $numbersWithDefaultOTP = [];
         // $numbersWithDefaultOTP = ["9779755869", "6280926975"];
         $isDefaultNumber = in_array($mobile, $numbersWithDefaultOTP);
         return $isDefaultNumber ? 1 : 0;
@@ -191,6 +195,9 @@ class UserController extends Controller
                 "message" => "Logged out successfully"
             ], 200);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -224,7 +231,7 @@ class UserController extends Controller
             );
 
             $whereQuery["mobile"] = $data["mobile"];
-            $user = User::where($whereQuery)->first();
+            $user = Registration::where($whereQuery)->first();
 
             if (!$user)
                 throw ExceptionHelper::unAuthorized([
@@ -232,7 +239,7 @@ class UserController extends Controller
                 ]);
 
             if ($user->otp !== $data["otp"]) {
-                User::where($whereQuery)->update([
+                Registration::where($whereQuery)->update([
                     "attempt" => $user->attempt + 1
                 ]);
                 throw ExceptionHelper::unAuthorized([
@@ -240,7 +247,7 @@ class UserController extends Controller
                     "attempt" => $user->attempt + 1
                 ]);
             } else
-                User::where($whereQuery)->update([
+                Registration::where($whereQuery)->update([
                     "attempt" => 1
                 ]);
 
@@ -262,6 +269,9 @@ class UserController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+            
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

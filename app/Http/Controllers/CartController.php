@@ -16,9 +16,10 @@ use App\Models\OrderEdited;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopTime;
-use App\Models\User;
+use App\Models\Registration;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
@@ -256,6 +257,9 @@ class CartController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -285,6 +289,9 @@ class CartController extends Controller
                 "message" => "Cart Cleared.",
             ], 200);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -458,6 +465,9 @@ class CartController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -878,6 +888,9 @@ class CartController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -960,6 +973,9 @@ class CartController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -1014,7 +1030,7 @@ class CartController extends Controller
                 ->first()
                 ->toArray();
 
-            $sqlReg = User::select("wallet_balance")
+            $sqlReg = Registration::select("wallet_balance")
                 ->where("id", $userId);
             $sqlRegData = $sqlReg->first();
 
@@ -1023,7 +1039,7 @@ class CartController extends Controller
             else
                 throw ExceptionHelper::somethingWentWrong([
                     "data" => [
-                        "dev_message" => "User wallet details not found"
+                        "dev_message" => "Registration wallet details not found"
                     ]
                 ]);
 
@@ -1861,6 +1877,9 @@ class CartController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
             $table->foreign("shop_id")->references("id")->on("shop");
-            $table->foreign("user_id")->references("id")->on("users");
+            $table->foreign("user_id")->references("id")->on("tbl_registration");
             $table->foreign("product_id")->references("id")->on("product");
         });
         Schema::enableForeignKeyConstraints();

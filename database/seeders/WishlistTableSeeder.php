@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
-use App\Models\User;
+use App\Models\Registration;
 use App\Models\Wishlist;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -22,7 +22,7 @@ class WishlistTableSeeder extends Seeder
 
         foreach ($wishlistItems as $wishlistItem) {
 
-            $customerId = User::inRandomOrder()->first()["id"];
+            $customerId = Registration::inRandomOrder()->first()["id"];
             $productId = Product::inRandomOrder()->first()["id"];
 
             unset($wishlistItem["customer_id"]);

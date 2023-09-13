@@ -16,7 +16,7 @@ class CreateWalletProcedures extends Migration
             DECLARE requiredBalance DECIMAL(10, 2);
             DECLARE isInsuffecientBalance BOOLEAN;
         
-            SELECT COALESCE(wallet_balance, 0), id INTO walletBalance, userId_ FROM users WHERE id = userId;
+            SELECT COALESCE(wallet_balance, 0), id INTO walletBalance, userId_ FROM tbl_registration WHERE id = userId;
         
             IF userId_ IS NULL THEN
                 SET userNotFound = TRUE;

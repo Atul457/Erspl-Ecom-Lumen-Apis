@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Shop;
 use App\Models\Slider;
-use App\Models\User;
+use App\Models\Registration;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
@@ -21,7 +21,7 @@ class SliderTableSeeder extends Seeder
 
         foreach ($dataArray as $shopTime) {
             $shopId = Shop::inRandomOrder()->first()["id"];
-            $userId = User::inRandomOrder()->first()["id"];
+            $userId = Registration::inRandomOrder()->first()["id"];
 
             unset($shopTime["shop_id"]);
             unset($shopTime["created_by"]);

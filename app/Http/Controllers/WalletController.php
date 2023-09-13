@@ -7,6 +7,7 @@ use App\Helpers\RequestValidator;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class WalletController extends Controller
@@ -65,6 +66,9 @@ class WalletController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -95,11 +99,11 @@ class WalletController extends Controller
 
             $userId = $data["userId"];
 
-            $baseQuery = Wallet::select("wallet.amount", "wallet.remark", "wallet.order_id", "wallet.referral_by",  DB::raw("CONCAT_WS(' ', NULLIF(TRIM(users.first_name), ''), NULLIF(TRIM(users.middle_name), ''), NULLIF(TRIM(users.last_name), '')) as invitedTo"), DB::raw("DATE_FORMAT(wallet.date, '%d-%M-%Y') as date"))
+            $baseQuery = Wallet::select("wallet.amount", "wallet.remark", "wallet.order_id", "wallet.referral_by",  DB::raw("CONCAT_WS(' ', NULLIF(TRIM(tbl_registration.first_name), ''), NULLIF(TRIM(tbl_registration.middle_name), ''), NULLIF(TRIM(tbl_registration.last_name), '')) as invitedTo"), DB::raw("DATE_FORMAT(wallet.date, '%d-%M-%Y') as date"))
                 ->where("wallet.customer_id", $userId)
                 ->where("wallet.remark", 'LIKE', '%Referral Bonus%')
                 ->orderBy("wallet.date", "desc")
-                ->join("users", "wallet.referral_code", "users.referral_code");
+                ->join("tbl_registration", "wallet.referral_code", "tbl_registration.referral_code");
 
             $referralList = $baseQuery
                 ->get()
@@ -128,6 +132,9 @@ class WalletController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,
@@ -193,6 +200,9 @@ class WalletController extends Controller
                 "message" => $e->getMessage(),
             ], 422);
         } catch (ExceptionHelper $e) {
+
+            Log::error($e->getMessage());
+
             return response([
                 "data" => $e->data,
                 "status" => $e->status,

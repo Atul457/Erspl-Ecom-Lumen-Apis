@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\ACategory;
 use App\Models\Coupon;
 use App\Models\Product;
-use App\Models\User;
+use App\Models\Registration;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
@@ -23,7 +23,7 @@ class CouponTableSeeder extends Seeder
         foreach ($couponItems as $coupon) {
 
             $categoryId = ACategory::inRandomOrder()->first()["id"];
-            $userId = User::inRandomOrder()->first()["id"];
+            $userId = Registration::inRandomOrder()->first()["id"];
             $productId = Product::inRandomOrder()->first()["id"];
 
             $coupon["user_id"] = $userId;

@@ -37,7 +37,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
 
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('tbl_registration');
             $table->foreign('category_id')->references('id')->on('acategory');
             $table->foreign('product_id')->references('id')->on('product');
 

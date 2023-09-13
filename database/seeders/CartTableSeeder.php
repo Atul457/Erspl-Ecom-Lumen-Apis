@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\Shop;
-use App\Models\User;
+use App\Models\Registration;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -23,7 +23,7 @@ class CartTableSeeder extends Seeder
 
         foreach ($cartItems as $cartItem) {
             $shopId = Shop::inRandomOrder()->first()["id"];
-            $userId = User::inRandomOrder()->first()["id"];
+            $userId = Registration::inRandomOrder()->first()["id"];
             $productId = Product::inRandomOrder()->first()["id"];
 
             unset($cartItem["shop_id"]);
