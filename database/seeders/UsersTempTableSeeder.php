@@ -28,18 +28,18 @@ class UsersTempTableSeeder extends Seeder
 
         UsersTemp::insert([
             array_merge($data, [
-                'first_name' => 'Atul',
-                'last_name' => "Singh",
-                'mobile' => "8837684275",
-                'email' => 'as3771083@gmail.com',
-                "referral_code" => "8837684275" . $referralPostFix
+                'first_name' => 'Ravi',
+                'last_name' => "Yadav",
+                'mobile' => "6280986975",
+                'email' => 'raviyadavspn1991@gmail.com',
+                "referral_code" => "6280986975" . $referralPostFix
             ]),
             array_merge($data, [
-                'first_name' => 'Anmol',
-                'last_name' => "Singh",
-                'mobile' => "9779755869",
+                'first_name' => 'Test',
+                'last_name' => "",
+                'mobile' => "8837684275",
                 'email' => 'atul15235@gmail.com',
-                "referral_code" => "9779755869" . $referralPostFix
+                "referral_code" => "8837684275" . $referralPostFix
             ])
         ]);
     }

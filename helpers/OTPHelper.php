@@ -15,13 +15,21 @@ class OTPHelper
      */
     public static function sendOTP($otp, $mobile)
     {
-        // Customize your message and other variables
-        $message = "Dear Customer,\nOTP to login to eRSPL is " . $otp . ". Please do not share with anyone.";
-
         // Fetch configuration from the database
         $home = Home::first();
         $smsVendor = $home->sms_vendor;
-        $curlUrl = $smsVendor === "ZAP" ? $home->zap_key : $home->fortius_key;
+
+        $curlUrl = "";
+        $message = "";
+
+        // Customize message and other variables
+        if ($smsVendor === "ZAP") {
+            $curlUrl = $home->zap_key;
+            $message = "Dear Customer,\nlogin to eRSPL OTP is $otp.Please do not share with anyone.";
+        } else {
+            $curlUrl = $home->fortius_key;
+            $message = "Dear Customer,\nOTP to login to eRSPL is " . $otp . ". Please do not share with anyone.";
+        }
 
         // Replace placeholders in the URL with actual values
         $curlUrl = str_replace("[MESSAGE]", urlencode($message), $curlUrl);

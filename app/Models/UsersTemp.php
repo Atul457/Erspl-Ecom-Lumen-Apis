@@ -9,7 +9,7 @@ class UsersTemp extends Model
 {
     use HasFactory;
 
-    protected $table = "users_temp";
+    protected $table = "tbl_registration_temp";
 
       /**
      * The attributes that are mass assignable.

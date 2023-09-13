@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users_temp', function (Blueprint $table) {
+        Schema::create('tbl_registration_temp', function (Blueprint $table) {
             $table->id();
             $table->string('otp');
             $table->string('mobile');
@@ -48,6 +48,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users_temp');
+        Schema::dropIfExists('tbl_registration_temp');
     }
 };

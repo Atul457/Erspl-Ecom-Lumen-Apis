@@ -151,7 +151,7 @@ class UsersTempController extends Controller
                 ],
                 [
                     "otp" => "digits:4|required",
-                    "mobile" => "required|digits:10|exists:users_temp|unique:users",
+                    "mobile" => "required|digits:10|exists:tbl_registration_temp|unique:users",
                 ]
             );
 
