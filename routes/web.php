@@ -82,6 +82,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/repeatCart', 'CartController@repeatCart'); 
         $router->post('/updateCart', 'CartController@updateCart'); 
         $router->post('/wishToCart', 'CartController@wishToCart'); 
+        
+        
+        // Order
+        $router->post('/orderList', 'OrderController@orderList'); 
+        $router->post('/orderStage', 'OrderController@orderStage'); 
+        $router->post('/getOrderStatus', 'OrderController@getOrderStatus'); 
+        $router->post('/orderReferenceList', 'OrderController@orderReferenceList'); 
 
 
     });

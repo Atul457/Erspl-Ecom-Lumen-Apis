@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use Exception;
-use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -20,7 +19,7 @@ class ExceptionHelper extends Exception
     public function __construct(array $errorInfo)
     {
         $this->status = false;
-        $this->data = $errorInfo["data"] ?? null;
+        $this->data = $errorInfo["data"] ?? [];
         $this->statusCode = $errorInfo["statusCode"] ?? 500;
         $this->message = $errorInfo["message"] ?? "Someting went Wrong. Try Again";
     }

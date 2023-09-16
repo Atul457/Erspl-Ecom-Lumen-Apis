@@ -20,32 +20,19 @@ class NotificationController extends Controller
 
         $urlToPrepend = url('notification/');
 
-        try {
+        $notificationList = Notification::select("id", DB::raw("DATE_FORMAT(date, '%d %M %Y, %h.%i %p') as date"), "description",  DB::raw("CONCAT('$urlToPrepend/', image) as image"))
+            ->whereIn("status", ["1"])
+            ->get()
+            ->toArray();
 
-            $notificationList = Notification::select("id", DB::raw("DATE_FORMAT(date, '%d %M %Y, %h.%i %p') as date"), "description",  DB::raw("CONCAT('$urlToPrepend/', image) as image"))
-                ->whereIn("status", ["1"])
-                ->get()
-                ->toArray();
-
-            return response([
-                "data" => [
-                    "notificationList" => $notificationList
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => null
-            ], 200);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "statusCode" => $e->statusCode,
-                "message" => $e->getMessage(),
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "notificationList" => $notificationList
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => null
+        ], 200);
     }
 
     /**

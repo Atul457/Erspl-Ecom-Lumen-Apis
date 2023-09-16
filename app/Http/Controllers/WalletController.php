@@ -26,56 +26,35 @@ class WalletController extends Controller
         $message = "Success";
         $userId = $req->user()->id;
 
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'numeric' => ':attribute must be be a number',
+            ],
+            [
+                "orderTotal" => "numeric|required"
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'numeric' => ':attribute must be be a number',
-                ],
-                [
-                    "orderTotal" => "numeric|required"
-                ]
-            );
+        $result = DB::select(
+            'CALL check_balance(?, ?)',
+            [$userId, $data["orderTotal"]]
+        );
+        $result = $result[0];
 
-            $result = DB::select(
-                'CALL check_balance(?, ?)',
-                [$userId, $data["orderTotal"]]
-            );
-            $result = $result[0];
+        if ($result->is_insufficient_balance) {
+            $message = "Insuficient balance";
+            $data_ = [];
+            $data_["requiredBalance"] = floatval($result->required_balance);
+        } else
+            $status = true;
 
-            if ($result->is_insufficient_balance) {
-                $message = "Insuficient balance";
-                $data_ = [];
-                $data_["requiredBalance"] = floatval($result->required_balance);
-            } else
-                $status = true;
-
-            return response([
-                "data" => $data_,
-                "status" => $status,
-                "statusCode" => 200,
-                "message" => $message,
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => $data_,
+            "status" => $status,
+            "statusCode" => 200,
+            "message" => $message,
+        ], 200);
     }
 
 
@@ -85,63 +64,43 @@ class WalletController extends Controller
      */
     public function referralList(Request $req)
     {
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'numeric' => ':attribute must be be a number',
+            ],
+            [
+                "userId" => "numeric|required"
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'numeric' => ':attribute must be be a number',
-                ],
-                [
-                    "userId" => "numeric|required"
-                ]
-            );
+        $userId = $data["userId"];
 
-            $userId = $data["userId"];
+        $baseQuery = Wallet::select("wallet.amount", "wallet.remark", "wallet.order_id", "wallet.referral_by",  DB::raw("CONCAT_WS(' ', NULLIF(TRIM(tbl_registration.first_name), ''), NULLIF(TRIM(tbl_registration.middle_name), ''), NULLIF(TRIM(tbl_registration.last_name), '')) as invitedTo"), DB::raw("DATE_FORMAT(wallet.date, '%d-%M-%Y') as date"))
+            ->where("wallet.customer_id", $userId)
+            ->where("wallet.remark", 'LIKE', '%Referral Bonus%')
+            ->orderBy("wallet.date", "desc")
+            ->join("tbl_registration", "wallet.referral_code", "tbl_registration.referral_code");
 
-            $baseQuery = Wallet::select("wallet.amount", "wallet.remark", "wallet.order_id", "wallet.referral_by",  DB::raw("CONCAT_WS(' ', NULLIF(TRIM(tbl_registration.first_name), ''), NULLIF(TRIM(tbl_registration.middle_name), ''), NULLIF(TRIM(tbl_registration.last_name), '')) as invitedTo"), DB::raw("DATE_FORMAT(wallet.date, '%d-%M-%Y') as date"))
-                ->where("wallet.customer_id", $userId)
-                ->where("wallet.remark", 'LIKE', '%Referral Bonus%')
-                ->orderBy("wallet.date", "desc")
-                ->join("tbl_registration", "wallet.referral_code", "tbl_registration.referral_code");
+        $referralList = $baseQuery
+            ->get()
+            ->toArray();
 
-            $referralList = $baseQuery
-                ->get()
-                ->toArray();
+        $resultCount = count($referralList);
 
-            $resultCount = count($referralList);
+        if ($resultCount === 0)
+            throw ExceptionHelper::notFound([
+                "message" => "list not found."
+            ]);
 
-            if ($resultCount === 0)
-                throw ExceptionHelper::notFound([
-                    "message" => "list not found."
-                ]);
-
-            return response([
-                "data" => [
-                    "referralList" => $referralList
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => null
-            ], 200);
-        } catch (ValidationException $e) {
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "referralList" => $referralList
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => null
+        ], 200);
     }
 
 
@@ -152,64 +111,43 @@ class WalletController extends Controller
      */
     public function rechargeWallet(Request $req)
     {
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'numeric' => ':attribute must be be a number'
+            ],
+            [
+                "amount" => "numeric|required"
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'numeric' => ':attribute must be be a number'
-                ],
-                [
-                    "amount" => "numeric|required"
-                ]
-            );
+        $userId = $req->user()->id;
+        $amount = $data['amount'];
+        $date   = date('Y-m-d H:i:s');
+        $invoiceId = time() . $userId;
 
-            $userId = $req->user()->id;
-            $amount = $data['amount'];
-            $date   = date('Y-m-d H:i:s');
-            $invoiceId = time().$userId;
+        $inserted = Wallet::insert([
+            "date" => $date,
+            "amount" => $amount,
+            "customer_id" => $userId,
+            "invoice_id" => $invoiceId,
+            "remark" => "Wallet Recharge",
+            "payment_status" => 1,
+        ]);
 
-            $inserted = Wallet::insert([
-                "date" => $date,
-                "amount" => $amount,
-                "customer_id" => $userId,
-                "invoice_id" => $invoiceId,
-                "remark" => "Wallet Recharge",
-                "payment_status" => 1,
+        if (!$inserted)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "Something went wrong. Try Again"
             ]);
 
-            if (!$inserted)
-                throw ExceptionHelper::somethingWentWrong([
-                    "message" => "Something went wrong. Try Again"
-                ]);
-
-            return response([
-                "data" => [
-                    "orderId" => round($invoiceId)
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => "Request Received"
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "orderId" => round($invoiceId)
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => "Request Received"
+        ], 200);
     }
 
     /**

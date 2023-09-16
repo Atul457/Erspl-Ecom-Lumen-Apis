@@ -84,53 +84,32 @@ class RegistrationTempController extends Controller
         $defaultOtp = "0000";
         $otp = OTPHelper::generateOtp();
 
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            ['digits' => ':attribute must be of :digits digits'],
+            ["mobile" => "required|digits:10"]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                ['digits' => ':attribute must be of :digits digits'],
-                ["mobile" => "required|digits:10"]
-            );
+        $userWithTable = $this->getUserWithTable($data["mobile"]);
 
-            $userWithTable = $this->getUserWithTable($data["mobile"]);
+        if (!$userWithTable["user"])
+            throw ExceptionHelper::unAuthorized([
+                "message" => "This mobile does't Registered."
+            ]);
 
-            if (!$userWithTable["user"])
-                throw ExceptionHelper::unAuthorized([
-                    "message" => "This mobile does't Registered."
-                ]);
+        if ($this->isDefaultMobile($data["mobile"]))
+            $otp = $defaultOtp;
+        else
+            OTPHelper::sendOTP($otp, $data["mobile"]);
 
-            if ($this->isDefaultMobile($data["mobile"]))
-                $otp = $defaultOtp;
-            else
-                OTPHelper::sendOTP($otp, $data["mobile"]);
+        $updated = Registration::where("mobile", $data["mobile"])->update(["otp" => $otp]);
 
-            $updated = Registration::where("mobile", $data["mobile"])->update(["otp" => $otp]);
-
-            return response([
-                "data" => null,
-                "status" =>  $updated ? true : false,
-                "statusCode" => $updated ? 200 : 500,
-                "messsage" => $updated ? "OTP Sent Successfully." : "Something went wrong."
-            ], $updated ? 200 : 500);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => null,
+            "status" =>  $updated ? true : false,
+            "statusCode" => $updated ? 200 : 500,
+            "messsage" => $updated ? "OTP Sent Successfully." : "Something went wrong."
+        ], $updated ? 200 : 500);
     }
 
 
@@ -144,75 +123,54 @@ class RegistrationTempController extends Controller
     {
         $whereQuery = [];
 
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'digits' => ':attribute must be of :digits digits',
+                'unique' => 'Registration with the provided :attribute already exists',
+                'exists' => "Registration with provided :attribute doesn't exists, please signUp."
+            ],
+            [
+                "otp" => "digits:4|required",
+                "mobile" => "required|digits:10|exists:tbl_registration_temp|unique:tbl_registration",
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'digits' => ':attribute must be of :digits digits',
-                    'unique' => 'Registration with the provided :attribute already exists',
-                    'exists' => "Registration with provided :attribute doesn't exists, please signUp."
-                ],
-                [
-                    "otp" => "digits:4|required",
-                    "mobile" => "required|digits:10|exists:tbl_registration_temp|unique:tbl_registration",
-                ]
-            );
+        $whereQuery["mobile"] = $data["mobile"];
+        $user = RegistrationTemp::where($whereQuery)->first()->toArray();
 
-            $whereQuery["mobile"] = $data["mobile"];
-            $user = RegistrationTemp::where($whereQuery)->first()->toArray();
+        if ($user["otp"] !== $data["otp"]) {
+            RegistrationTemp::where($whereQuery)->update([
+                "attempt" => $user["attempt"] + 1
+            ]);
+            throw ExceptionHelper::unAuthorized([
+                "message" => "Invalid OTP",
+            ]);
+        } else
+            RegistrationTemp::where($whereQuery)->update([
+                "attempt" => 1
+            ]);
 
-            if ($user["otp"] !== $data["otp"]) {
-                RegistrationTemp::where($whereQuery)->update([
-                    "attempt" => $user["attempt"] + 1
-                ]);
-                throw ExceptionHelper::unAuthorized([
-                    "message" => "Invalid OTP",
-                ]);
-            } else
-                RegistrationTemp::where($whereQuery)->update([
-                    "attempt" => 1
-                ]);
+        // Remove redundant keys
+        unset($user["id"]);
+        unset($user["created_at"]);
+        unset($user["updated_at"]);
 
-            // Remove redundant keys
-            unset($user["id"]);
-            unset($user["created_at"]);
-            unset($user["updated_at"]);
+        $user = Registration::insert($user);
+        $user = Registration::where($whereQuery)->first();
 
-            $user = Registration::insert($user);
-            $user = Registration::where($whereQuery)->first();
+        if (!$user)
+            throw ExceptionHelper::somethingWentWrong();
 
-            if (!$user)
-                throw ExceptionHelper::somethingWentWrong();
+        $token = Auth::login($user);
+        $response["token"] = $token;
 
-            $token = Auth::login($user);
-            $response["token"] = $token;
-
-            return response([
-                "status" => true,
-                "statusCode" => 200,
-                "data" => $response,
-                "message" => "Logged in successfully.",
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "status" => true,
+            "statusCode" => 200,
+            "data" => $response,
+            "message" => "Logged in successfully.",
+        ], 200);
     }
 
 
@@ -256,89 +214,68 @@ class RegistrationTempController extends Controller
         $referralPostFix = "ERSPL";
         $defaultRegistrationType = "App";
 
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'email' => ':attribute not valid',
+                'string' => ':attribute must be a string',
+                "in" => ':attribute can only be 0, 1, or 2',
+                'required' => ':attribute is a required field',
+                'digits' => ':attribute must be of :digits digits',
+                'min' => ':attribute must be of at least :min characters',
+                'unique' => 'Registration with the provided :attribute already exists',
+                'size' => ':attribute must be of :size alpha numeric characters',
+            ],
+            [
+                "gender" => "in:0,1,2",
+                "last_name" => "string",
+                "middle_name" => "string",
+                "dob" => "date_format:Y-m-d",
+                'password' => 'required|min:6',
+                "referral_by" => "string|size:15",
+                "first_name" => "required|string|min:2",
+                'email' => 'required|email|unique:tbl_registration,email',
+                "alt_mobile" => "unique:tbl_registration,mobile|digits:10",
+                "mobile" => "required|unique:tbl_registration,mobile|digits:10",
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'email' => ':attribute not valid',
-                    'string' => ':attribute must be a string',
-                    "in" => ':attribute can only be 0, 1, or 2',
-                    'required' => ':attribute is a required field',
-                    'digits' => ':attribute must be of :digits digits',
-                    'min' => ':attribute must be of at least :min characters',
-                    'unique' => 'Registration with the provided :attribute already exists',
-                    'size' => ':attribute must be of :size alpha numeric characters',
-                ],
-                [
-                    "gender" => "in:0,1,2",
-                    "last_name" => "string",
-                    "middle_name" => "string",
-                    "dob" => "date_format:Y-m-d",
-                    'password' => 'required|min:6',
-                    "referral_by" => "string|size:15",
-                    "first_name" => "required|string|min:2",
-                    'email' => 'required|email|unique:tbl_registration,email',
-                    "alt_mobile" => "unique:tbl_registration,mobile|digits:10",
-                    "mobile" => "required|unique:tbl_registration,mobile|digits:10",
-                ]
-            );
+        // Hashing
+        $password = $data["password"];
+        $hashedPassword = Hash::make($password);
 
-            // Hashing
-            $password = $data["password"];
-            $hashedPassword = Hash::make($password);
+        // Add mandatory fields
+        $data["attempt"] = 1;
+        $data["password"] = $hashedPassword;
+        $data["otp"] = OTPHelper::generateOtp();
+        $data["reg_type"] = $defaultRegistrationType;
+        $data["referral_code"] = $data['mobile'] . $referralPostFix;
 
-            // Add mandatory fields
-            $data["attempt"] = 1;
-            $data["password"] = $hashedPassword;
-            $data["otp"] = OTPHelper::generateOtp();
-            $data["reg_type"] = $defaultRegistrationType;
-            $data["referral_code"] = $data['mobile'] . $referralPostFix;
+        // Validate referral_by
+        $isReferralByValid = $this->isReferralByValid($data["referral_by"] ?? "");
 
-            // Validate referral_by
-            $isReferralByValid = $this->isReferralByValid($data["referral_by"] ?? "");
+        if (!$isReferralByValid)
+            throw ExceptionHelper::unAuthorized([
+                'message' => "Enter a valid Referral Code."
+            ]);
 
-            if (!$isReferralByValid)
-                throw ExceptionHelper::unAuthorized([
-                    'message' => "Enter a valid Referral Code."
-                ]);
+        if ($this->isDefaultMobile($data["mobile"]))
+            $data["otp"] = $defaultOtp;
 
-            if ($this->isDefaultMobile($data["mobile"]))
-                $data["otp"] = $defaultOtp;
+        $insertedOrUpdated = $this->manageUserInTemp($data);
 
-            $insertedOrUpdated = $this->manageUserInTemp($data);
+        if (!$insertedOrUpdated)
+            throw ExceptionHelper::somethingWentWrong();
 
-            if (!$insertedOrUpdated)
-                throw ExceptionHelper::somethingWentWrong();
+        OTPHelper::sendOTP($data["otp"], $data["mobile"]);
 
-            OTPHelper::sendOTP($data["otp"], $data["mobile"]);
-
-            return response([
-                "data" => [
-                    "otp" => $data["otp"]
-                ],
-                "status" => true,
-                "statusCode" => 200,
-                "messsage" => "OTP Sent Successfully."
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-            
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "otp" => $data["otp"]
+            ],
+            "status" => true,
+            "statusCode" => 200,
+            "messsage" => "OTP Sent Successfully."
+        ], 200);
     }
 }

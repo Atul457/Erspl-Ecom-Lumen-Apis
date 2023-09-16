@@ -14,37 +14,23 @@ class CancelReasonController extends Controller
      */
     public function reasonList()
     {
+        $reasonList = CancelReason::select("id", "name")
+            ->where([
+                "status" => 1
+            ])
+            ->get()
+            ->toArray();
 
-        try {
+        if (!count($reasonList))
+            throw ExceptionHelper::somethingWentWrong();
 
-            $reasonList = CancelReason::select("id", "name")
-                ->where([
-                    "status" => 1
-                ])
-                ->get()
-                ->toArray();
-
-            if (!count($reasonList))
-                throw ExceptionHelper::somethingWentWrong();
-
-            return response([
-                "data" => [
-                    "reasonList" => $reasonList
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => null
-            ], 200);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "statusCode" => $e->statusCode,
-                "message" => $e->getMessage(),
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "reasonList" => $reasonList
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => null
+        ], 200);
     }
 }

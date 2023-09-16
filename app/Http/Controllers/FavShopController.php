@@ -17,69 +17,49 @@ class FavShopController extends Controller
      */
     public function addFavShop(Request $req)
     {
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'exists' => 'shop with provided id doesn\'t exist'
+            ],
+            [
+                "shopId" => "required|exists:shop,id",
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'exists' => 'shop with provided id doesn\'t exist'
-                ],
-                [
-                    "shopId" => "required|exists:shop,id",
-                ]
-            );
+        $userId = $req->user()->id;
+        $shopId = $data['shopId'];
+        $currentTime = date('Y-m-d H:i:s');
 
-            $userId = $req->user()->id;
-            $shopId = $data['shopId'];
-            $currentTime = date('Y-m-d H:i:s');
-
-            $alreadyAdded = FavShop::select("*")
-                ->where([
-                    "shop_id" => $shopId,
-                    "user_id" => $userId
-                ])
-                ->count() > 1;
-
-            if ($alreadyAdded)
-                throw ExceptionHelper::unAuthorized([
-                    "message" => "Already added to favourite."
-                ]);
-
-            $inserted = FavShop::create([
+        $alreadyAdded = FavShop::select("*")
+            ->where([
                 "shop_id" => $shopId,
-                "user_id" => $userId,
-                "datetime" => $currentTime
+                "user_id" => $userId
+            ])
+            ->count() > 1;
+
+        if ($alreadyAdded)
+            throw ExceptionHelper::unAuthorized([
+                "message" => "Already added to favourite."
             ]);
 
-            if (!$inserted)
-                throw ExceptionHelper::somethingWentWrong([
-                    "message" => "Already added to favourite."
-                ]);
+        $inserted = FavShop::create([
+            "shop_id" => $shopId,
+            "user_id" => $userId,
+            "datetime" => $currentTime
+        ]);
 
-            return response([
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => "Added To favourite Shops."
-            ], 200);
-        } catch (ValidationException $e) {
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
+        if (!$inserted)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "Already added to favourite."
+            ]);
 
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => null,
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => "Added To favourite Shops."
+        ], 200);
     }
 
 
@@ -89,53 +69,33 @@ class FavShopController extends Controller
      */
     public function removeFav(Request $req)
     {
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'exists' => 'shop with provided id doesn\'t exist'
+            ],
+            [
+                "shopId" => "required|exists:shop,id",
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [
-                    'exists' => 'shop with provided id doesn\'t exist'
-                ],
-                [
-                    "shopId" => "required|exists:shop,id",
-                ]
-            );
+        $userId = $req->user()->id;
+        $shopId = $data['shopId'];
 
-            $userId = $req->user()->id;
-            $shopId = $data['shopId'];
+        $deleted = FavShop::where([
+            "shop_id" => $shopId,
+            "user_id" => $userId
+        ])
+            ->delete();
 
-            $deleted = FavShop::where([
-                "shop_id" => $shopId,
-                "user_id" => $userId
-            ])
-                ->delete();
+        if (!$deleted)
+            throw ExceptionHelper::somethingWentWrong();
 
-            if (!$deleted)
-                throw ExceptionHelper::somethingWentWrong();
-
-            return response([
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => "Removed From favourite."
-            ], 200);
-        } catch (ValidationException $e) {
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-            
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => null,
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => "Removed From favourite."
+        ], 200);
     }
 }

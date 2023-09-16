@@ -21,52 +21,31 @@ class ACategoryController extends Controller
     {
         $urlToPrepend = url('categorys/');
 
-        try {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [],
+            [
+                "industriesId" => "required|numeric"
+            ]
+        );
 
-            $data = RequestValidator::validate(
-                $req->input(),
-                [],
-                [
-                    "industriesId" => "required|numeric"
-                ]
-            );
+        $categories = ACategory::select("name", "id as categoryId", DB::raw("CONCAT('$urlToPrepend/', icon) as image", "status as categoryStatus"))
+            ->where([
+                "industries_id" => $data["industriesId"],
+                "status" => 1
+            ])
+            ->orderBy("category_order", "desc")
+            ->get()
+            ->toArray();
 
-            $categories = ACategory::select("name", "id as categoryId", DB::raw("CONCAT('$urlToPrepend/', icon) as image", "status as categoryStatus"))
-                ->where([
-                    "industries_id" => $data["industriesId"],
-                    "status" => 1
-                ])
-                ->orderBy("category_order", "desc")
-                ->get()
-                ->toArray();
-
-            return response([
-                "data" => [
-                    "categories" => $categories
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => null
-            ], 200);
-        } catch (ValidationException $e) {
-
-            return response([
-                "data" => null,
-                "status" => false,
-                "statusCode" => 422,
-                "message" => $e->getMessage(),
-            ], 422);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "statusCode" => $e->statusCode,
-                "message" => $e->getMessage(),
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "categories" => $categories
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => null
+        ], 200);
     }
 
     /**
@@ -77,40 +56,27 @@ class ACategoryController extends Controller
     public function searchCategoryList()
     {
 
-        try {
+        $categoryList = ACategory::select("name as categoryName")
+            ->where([
+                "status" => 1,
+                "industries_id" => 1,
+            ])
+            ->get()
+            ->toArray();
 
-            $categoryList = ACategory::select("name as categoryName")
-                ->where([
-                    "status" => 1,
-                    "industries_id" => 1,
-                ])
-                ->get()
-                ->toArray();
+        if (!count($categoryList))
+            throw ExceptionHelper::notFound([
+                "message" => "Category List Not Found."
+            ]);
 
-            if (!count($categoryList))
-                throw ExceptionHelper::notFound([
-                    "message" => "Category List Not Found."
-                ]);
-
-            return response([
-                "data" => [
-                    "categoryList" => $categoryList
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => null
-            ], 200);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "statusCode" => $e->statusCode,
-                "message" => $e->getMessage(),
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "categoryList" => $categoryList
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => null
+        ], 200);
     }
 
     /**

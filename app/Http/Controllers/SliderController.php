@@ -18,39 +18,26 @@ class SliderController extends Controller
      */
     public function sliderList(Request $req)
     {
+        $prefix = url("/slider");
 
-        try {
-            $prefix = url("/slider");
+        $sliderList = Slider::select(DB::raw("CONCAT('$prefix', slider) as image"), "link")
+            ->where("status", 1)
+            ->orderBy("sort_order")
+            ->get()
+            ->toArray();
 
-            $sliderList = Slider::select(DB::raw("CONCAT('$prefix', slider) as image"), "link")
-                ->where("status", 1)
-                ->orderBy("sort_order")
-                ->get()
-                ->toArray();
+        if (!count($sliderList))
+            throw ExceptionHelper::notFound([
+                "message" => "Slider list not found."
+            ]);
 
-            if (!count($sliderList))
-                throw ExceptionHelper::notFound([
-                    "message" => "Slider list not found."
-                ]);
-
-            return response([
-                "data" => [
-                    "sliderList" => $sliderList
-                ],
-                "status" =>  true,
-                "statusCode" => 200,
-                "messsage" => null
-            ], 200);
-        } catch (ExceptionHelper $e) {
-
-            Log::error($e->getMessage());
-
-            return response([
-                "data" => $e->data,
-                "status" => $e->status,
-                "message" => $e->getMessage(),
-                "statusCode" => $e->statusCode,
-            ], $e->statusCode);
-        }
+        return response([
+            "data" => [
+                "sliderList" => $sliderList
+            ],
+            "status" =>  true,
+            "statusCode" => 200,
+            "messsage" => null
+        ], 200);
     }
 }
