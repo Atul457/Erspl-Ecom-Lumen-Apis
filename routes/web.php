@@ -85,6 +85,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         
         
         // Order
+        $router->post('/saveOrder', 'OrderController@saveOrder'); 
         $router->post('/orderList', 'OrderController@orderList'); 
         $router->post('/orderStage', 'OrderController@orderStage'); 
         $router->post('/getOrderStatus', 'OrderController@getOrderStatus'); 
