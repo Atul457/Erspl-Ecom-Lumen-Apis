@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Constants\StatusCodes;
 use Exception;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,8 +21,8 @@ class ExceptionHelper extends Exception
     {
         $this->status = false;
         $this->data = $errorInfo["data"] ?? [];
-        $this->statusCode = $errorInfo["statusCode"] ?? 500;
         $this->message = $errorInfo["message"] ?? "Someting went Wrong. Try Again";
+        $this->statusCode = $errorInfo["statusCode"] ?? StatusCodes::INTERNAL_SERVER_ERROR;
     }
 
 
@@ -34,8 +35,8 @@ class ExceptionHelper extends Exception
     {
         return new ExceptionHelper([
             "status" => false,
-            "statusCode" => 500,
             "data"  => $errorInfo["data"] ?? null,
+            "statusCode" => StatusCodes::INTERNAL_SERVER_ERROR,
             "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again",
         ]);
     }
@@ -49,8 +50,8 @@ class ExceptionHelper extends Exception
     {
         return new ExceptionHelper([
             "status" => false,
-            "statusCode" => 401,
             "data"  => $errorInfo["data"] ?? null,
+            "statusCode" => StatusCodes::UNAUTHORIZED,
             "message" => $errorInfo["message"] ?? "Unauthorized",
         ]);
     }
@@ -64,7 +65,7 @@ class ExceptionHelper extends Exception
     {
         return new ExceptionHelper([
             "status" => false,
-            "statusCode" => 404,
+            "statusCode" => StatusCodes::NOT_FOUND,
             "data"  => $errorInfo["data"] ?? null,
             "message" => $errorInfo["message"] ?? "Resource not found",
         ]);
@@ -79,8 +80,8 @@ class ExceptionHelper extends Exception
     {
         return new ExceptionHelper([
             "status" => false,
-            "statusCode" => 409,
             "data"  => $errorInfo["data"] ?? null,
+            "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
             "message" => $errorInfo["message"] ?? "Resource already exists",
         ]);
     }
@@ -94,8 +95,8 @@ class ExceptionHelper extends Exception
     {
         return new ExceptionHelper([
             "status" => false,
-            "statusCode" => 422,
             "data"  => $errorInfo["data"] ?? null,
+            "statusCode" => StatusCodes::VALIDATION_ERROR,
             "message" => $errorInfo["message"] ?? "Unprocessable Entity",
         ]);
     }

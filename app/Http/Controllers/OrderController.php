@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
@@ -194,9 +195,9 @@ class OrderController extends Controller
                 "orderList" => $orderList,
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -460,9 +461,9 @@ class OrderController extends Controller
                 "orderReferenceList" => $orderReferenceList,
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -540,9 +541,9 @@ class OrderController extends Controller
                 "orderStatus" => $data['order_id'],
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -595,9 +596,9 @@ class OrderController extends Controller
                 "orderStatus" => $orderStatus,
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -1254,8 +1255,8 @@ class OrderController extends Controller
                 "date" => date('M d, Y', strtotime($currentDateTime))
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Order Saved Successfully."
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

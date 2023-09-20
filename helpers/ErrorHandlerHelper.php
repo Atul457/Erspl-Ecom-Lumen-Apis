@@ -3,6 +3,7 @@
 namespace App\Helpers;
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,7 @@ class ErrorHandlerHelper
     public bool $status = false;
     public $functionName = null;
     public $errorSnapshot = null;
-    public int $statusCode = 500;
+    public int $statusCode = StatusCodes::INTERNAL_SERVER_ERROR;
     public $originalMessage = null;
 
 
@@ -52,7 +53,7 @@ class ErrorHandlerHelper
 
         $this->originalMessage = $this->message;
 
-        if ($this->statusCode === 500)
+        if ($this->statusCode === StatusCodes::INTERNAL_SERVER_ERROR)
             $this->message = "something went wrong";
 
         Log::error("\nFunction name: $this->functionName\nFile name: $this->fileName\nLine number: $this->lineNumber\nMessage: $this->originalMessage\nPayload: " . json_encode($this->payload) . "\nResponse data: " . json_encode($this->data) . "\nError snap: $this->errorSnapshot\n\n");
@@ -102,7 +103,7 @@ class ErrorHandlerHelper
 
         $this->data = [];
         $this->status = false;
-        $this->statusCode = 500;
+        $this->statusCode = StatusCodes::INTERNAL_SERVER_ERROR;
         $this->message = $e->getMessage();
 
         preg_match_all($regex, $str, $matches, PREG_SET_ORDER, 0);

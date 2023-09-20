@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Models\Slider;
 use Illuminate\Http\Request;
@@ -36,8 +37,8 @@ class SliderController extends Controller
                 "sliderList" => $sliderList
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

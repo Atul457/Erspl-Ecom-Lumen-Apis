@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Models\AddressBook;
 
@@ -92,9 +93,9 @@ class AddressBookController extends Controller
                 return response([
                     "data" => null,
                     "status" => true,
-                    "statusCode" => 200,
+                    "statusCode" => StatusCodes::OK,
                     "message" => $message,
-                ], 200);
+                ], StatusCodes::OK);
             else
                 throw ExceptionHelper::somethingWentWrong();
         }
@@ -113,9 +114,9 @@ class AddressBookController extends Controller
                 "addressId" => $insertedAddressId
             ],
             "status" => true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => $message,
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -155,9 +156,9 @@ class AddressBookController extends Controller
         return response([
             "status" => true,
             "message" => null,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "data" => $addresses,
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -204,9 +205,9 @@ class AddressBookController extends Controller
         return response([
             "data" => null,
             "status" => true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => "Default address updated.",
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -277,9 +278,9 @@ class AddressBookController extends Controller
         return response([
             "data" => null,
             "status" => true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => $message,
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -300,9 +301,9 @@ class AddressBookController extends Controller
             return response([
                 "data" => null,
                 "status" => true,
-                "statusCode" => 200,
+                "statusCode" => StatusCodes::OK,
                 "message" => "Address Deleted Successfully.",
-            ], 200);
+            ], StatusCodes::OK);
         } else {
             return response([
                 "data" => null,

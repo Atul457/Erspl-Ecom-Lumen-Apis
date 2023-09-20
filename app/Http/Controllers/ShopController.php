@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Helpers\UtilityHelper;
@@ -200,9 +201,9 @@ class ShopController extends Controller
                     "shopList" => $shopList
                 ],
                 "status" =>  true,
-                "statusCode" => 200,
+                "statusCode" => StatusCodes::OK,
                 "messsage" => null
-            ], 200);
+            ], StatusCodes::OK);
         }
 
         throw ExceptionHelper::notFound([
@@ -374,9 +375,9 @@ class ShopController extends Controller
                 "data" => $arr
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -536,9 +537,9 @@ class ShopController extends Controller
                 "shopList" => $shopList
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -585,8 +586,8 @@ class ShopController extends Controller
                 "productId" => $sqlProductData["id"]
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

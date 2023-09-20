@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Models\CancelReason;
 use Illuminate\Support\Facades\Log;
@@ -29,8 +30,8 @@ class CancelReasonController extends Controller
                 "reasonList" => $reasonList
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

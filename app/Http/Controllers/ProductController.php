@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Cart;
@@ -78,9 +79,9 @@ class ProductController extends Controller
                 "subCategoryList" => $subCategoryList
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -233,8 +234,8 @@ class ProductController extends Controller
                 "productlist" => $productlist
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Cart;
@@ -105,9 +106,9 @@ class WishlistController extends Controller
                 "productlist" => $productlist
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -158,9 +159,9 @@ class WishlistController extends Controller
         return response([
             "data" => null,
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Added To Wishlist."
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -208,8 +209,8 @@ class WishlistController extends Controller
         return response([
             "data" => null,
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Removed From Wishlist."
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

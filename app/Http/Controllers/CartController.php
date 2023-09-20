@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
@@ -152,9 +153,9 @@ class CartController extends Controller
             return response([
                 "data" => null,
                 "status" =>  true,
-                "statusCode" => 200,
+                "statusCode" => StatusCodes::OK,
                 "messsage" => "Item added to cart"
-            ], 200);
+            ], StatusCodes::OK);
 
         $offerBundleData = $sqlOfferBundle
             ->get()
@@ -264,9 +265,9 @@ class CartController extends Controller
         return response([
             "data" => null,
             "status" => true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => "Cart Cleared.",
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -321,9 +322,9 @@ class CartController extends Controller
                         "status" => 4
                     ],
                     "status" => true,
-                    "statusCode" => 200,
+                    "statusCode" => StatusCodes::OK,
                     "message" => "Your cart contains products. Do you want to replace?",
-                ], 200);
+                ], StatusCodes::OK);
             } else {
 
                 $sql = $sql->get()->toArray();
@@ -344,9 +345,9 @@ class CartController extends Controller
                                 "status" => 1
                             ],
                             "status" => true,
-                            "statusCode" => 200,
+                            "statusCode" => StatusCodes::OK,
                             "message" => "Item add to cart.",
-                        ], 200);
+                        ], StatusCodes::OK);
                     else
                         throw ExceptionHelper::somethingWentWrong([
                             "message" => "Someting went Wrong. Try Again.",
@@ -380,9 +381,9 @@ class CartController extends Controller
                         "status" => 4
                     ],
                     "status" => true,
-                    "statusCode" => 200,
+                    "statusCode" => StatusCodes::OK,
                     "message" => "Your cart contains products. Do you want to replace?",
-                ], 200);
+                ], StatusCodes::OK);
             } else {
 
                 foreach ($checkData as $data) {
@@ -401,9 +402,9 @@ class CartController extends Controller
                                 "status" => 1
                             ],
                             "status" => true,
-                            "statusCode" => 200,
+                            "statusCode" => StatusCodes::OK,
                             "message" => "Item add to cart.",
-                        ], 200);
+                        ], StatusCodes::OK);
                     else
                         throw ExceptionHelper::somethingWentWrong([
                             "message" => "Someting went Wrong. Try Again.",
@@ -418,9 +419,9 @@ class CartController extends Controller
         return response([
             "data" => null,
             "status" => true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => null,
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -478,9 +479,9 @@ class CartController extends Controller
                         "status" => 1
                     ],
                     "status" => true,
-                    "statusCode" => 200,
+                    "statusCode" => StatusCodes::OK,
                     "message" => "Item added to cart",
-                ], 200);
+                ], StatusCodes::OK);
             else
                 throw ExceptionHelper::somethingWentWrong();
         } else {
@@ -539,9 +540,9 @@ class CartController extends Controller
                                 "status" => 2
                             ],
                             "status" => true,
-                            "statusCode" => 200,
+                            "statusCode" => StatusCodes::OK,
                             "message" => "You can't add more than " . ($sqlhomeData['weight_capping'] / 1000) . " KG from single shop",
-                        ], 200);
+                        ], StatusCodes::OK);
                     else {
 
                         $sql = Cart::where([
@@ -686,9 +687,9 @@ class CartController extends Controller
                                     "subTotal" => $subTotal,
                                 ],
                                 "status" => true,
-                                "statusCode" => 200,
+                                "statusCode" => StatusCodes::OK,
                                 "message" => "CART UPDATED",
-                            ], 200);
+                            ], StatusCodes::OK);
                         }
                     }
                 }
@@ -812,9 +813,9 @@ class CartController extends Controller
                             "subTotal" => $subTotal
                         ],
                         "status" => true,
-                        "statusCode" => 200,
+                        "statusCode" => StatusCodes::OK,
                         "message" => "Product Removed",
-                    ], 200);
+                    ], StatusCodes::OK);
                 } else
                     throw ExceptionHelper::somethingWentWrong([
                         "data" => [
@@ -883,9 +884,9 @@ class CartController extends Controller
                 "status" => 1
             ],
             "status" => true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => "Item added to cart",
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -1489,9 +1490,9 @@ class CartController extends Controller
                                         "couponDescription" => $offerDescrption
                                     ],
                                     "status" => true,
-                                    "statusCode" => 200,
+                                    "statusCode" => StatusCodes::OK,
                                     "message" => "COUPON APPLIED.",
-                                ], 200);
+                                ], StatusCodes::OK);
                             } else
                                 throw ExceptionHelper::unprocessable([
                                     "message" => "Minimun Order Value To Apply This Coupon is " . $sqlCouponData1['minimum_value'] . "/-"
@@ -1516,9 +1517,9 @@ class CartController extends Controller
                                     "couponDescription" => $offerDescrption
                                 ],
                                 "status" => true,
-                                "statusCode" => 200,
+                                "statusCode" => StatusCodes::OK,
                                 "message" => "COUPON APPLIED.",
-                            ], 200);
+                            ], StatusCodes::OK);
                         } else
                             throw ExceptionHelper::unprocessable([
                                 "message" => "Minimun Order Value To Apply This Coupon is " . $sqlCouponData1['minimum_value'] . "/-"
@@ -1751,9 +1752,9 @@ class CartController extends Controller
                     "walletStatus" => $sqlhomeData['wallet_status']
                 ],
                 "status" => true,
-                "statusCode" => 200,
+                "statusCode" => StatusCodes::OK,
                 "message" => "Cart Empty.",
-            ], 200);
+            ], StatusCodes::OK);
 
         throw ExceptionHelper::somethingWentWrong();
     }

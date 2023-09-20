@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Wallet;
@@ -52,9 +53,9 @@ class WalletController extends Controller
         return response([
             "data" => $data_,
             "status" => $status,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "message" => $message,
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -98,9 +99,9 @@ class WalletController extends Controller
                 "referralList" => $referralList
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => null
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -145,9 +146,9 @@ class WalletController extends Controller
                 "orderId" => round($invoiceId)
             ],
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Request Received"
-        ], 200);
+        ], StatusCodes::OK);
     }
 
     /**

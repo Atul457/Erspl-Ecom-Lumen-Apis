@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Rating;
@@ -71,9 +72,9 @@ class RatingController extends Controller
             return response([
                 "data" => null,
                 "status" =>  true,
-                "statusCode" => 200,
+                "statusCode" => StatusCodes::OK,
                 "messsage" => "Rating Updated."
-            ], 200);
+            ], StatusCodes::OK);
         }
 
         $inserted = Rating::insert([
@@ -96,8 +97,8 @@ class RatingController extends Controller
         return response([
             "data" => null,
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Rating Submitted."
-        ], 200);
+        ], StatusCodes::OK);
     }
 }

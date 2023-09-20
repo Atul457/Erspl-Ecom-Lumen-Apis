@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\FavShop;
@@ -57,9 +58,9 @@ class FavShopController extends Controller
         return response([
             "data" => null,
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Added To favourite Shops."
-        ], 200);
+        ], StatusCodes::OK);
     }
 
 
@@ -94,8 +95,8 @@ class FavShopController extends Controller
         return response([
             "data" => null,
             "status" =>  true,
-            "statusCode" => 200,
+            "statusCode" => StatusCodes::OK,
             "messsage" => "Removed From favourite."
-        ], 200);
+        ], StatusCodes::OK);
     }
 }
