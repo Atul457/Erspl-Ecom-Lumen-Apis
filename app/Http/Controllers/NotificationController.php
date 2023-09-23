@@ -3,102 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Constants\StatusCodes;
-use App\Helpers\ExceptionHelper;
 use App\Models\Notification;
-use Illuminate\Http\Request;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
+
+    private NotificationService $service;
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @todo Document this
+     */
+    public function __construct()
+    {
+        $this->service = new NotificationService();
+    }
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
      */
     public function notificationList()
     {
-
-        $urlToPrepend = url('notification/');
-
-        $notificationList = Notification::select("id", DB::raw("DATE_FORMAT(date, '%d %M %Y, %h.%i %p') as date"), "description",  DB::raw("CONCAT('$urlToPrepend/', image) as image"))
-            ->whereIn("status", ["1"])
-            ->get()
-            ->toArray();
-
-        return response([
-            "data" => [
-                "notificationList" => $notificationList
-            ],
-            "status" =>  true,
-            "statusCode" => StatusCodes::OK,
-            "messsage" => null
-        ], StatusCodes::OK);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Notification  $notification
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Notification  $notification
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Notification  $notification
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Notification  $notification
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Notification $notification)
-    {
-        //
+        $res = $this->service->notificationList();
+        return response($res["response"], $res["statusCode"]);
     }
 }

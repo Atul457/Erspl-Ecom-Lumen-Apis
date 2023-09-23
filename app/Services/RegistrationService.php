@@ -95,7 +95,7 @@ class RegistrationService
                 "message" => "Your account is suspended."
             ]);
 
-        $token = Auth::login($user);
+        $token = Auth::setTTL(24 * 10 * 60)->login($user);
 
         return [
             "response" => [
@@ -177,7 +177,7 @@ class RegistrationService
                 "attempt" => 1
             ]);
 
-        $token = Auth::login($user);
+        $token = Auth::setTTL(24 * 10 * 60)->login($user);
         $response["token"] = $token;
 
         return [
@@ -222,6 +222,5 @@ class RegistrationService
             ],
             "statusCode" => StatusCodes::OK
         ];
-
     }
 }

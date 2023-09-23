@@ -143,7 +143,7 @@ class RegistrationTempService
         if (!$user)
             throw ExceptionHelper::somethingWentWrong();
 
-        $token = Auth::login($user);
+        $token = Auth::setTTL(24 * 10 * 60)->login($user);
         $response["token"] = $token;
 
         return [

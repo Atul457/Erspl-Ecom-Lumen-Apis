@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use Illuminate\Support\Facades\DB;
+
 class UtilityHelper
 {
     /**
@@ -42,5 +44,25 @@ class UtilityHelper
         $distance = $earthRadius * $c;
 
         return $distance;
+    }
+
+
+
+    /**
+     * @todo document this
+     */
+    public static function disableSqlStrictMode()
+    {
+        DB::statement('SET SESSION sql_mode = ""');
+    }
+
+
+
+    /**
+     * @todo document this
+     */
+    public static function enableSqlStrictMode()
+    {
+        DB::statement('SET SESSION sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"');
     }
 }

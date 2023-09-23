@@ -5,40 +5,33 @@ namespace App\Http\Controllers;
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Models\Slider;
+use App\Services\SliderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 class SliderController extends Controller
 {
+
+    private SliderService $service;
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function __construct()
+    {
+        $this->service = new SliderService();
+    }
+
+
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @todo Document this
      */
-    public function sliderList(Request $req)
+    public function sliderList()
     {
-        $prefix = url("/slider");
-
-        $sliderList = Slider::select(DB::raw("CONCAT('$prefix', slider) as image"), "link")
-            ->where("status", 1)
-            ->orderBy("sort_order")
-            ->get()
-            ->toArray();
-
-        if (!count($sliderList))
-            throw ExceptionHelper::notFound([
-                "message" => "Slider list not found."
-            ]);
-
-        return response([
-            "data" => [
-                "sliderList" => $sliderList
-            ],
-            "status" =>  true,
-            "statusCode" => StatusCodes::OK,
-            "messsage" => null
-        ], StatusCodes::OK);
+        $res = $this->service->sliderList();
+        return response($res["response"], $res["statusCode"]);
     }
 }
