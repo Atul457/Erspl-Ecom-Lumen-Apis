@@ -67,9 +67,9 @@ class RegistrationController extends Controller
     /**
      * @TODO Document this
      */
-    public function logout()
+    public function logout(Request $req)
     {
-        $res = $this->service->logout();
+        $res = $this->service->logout($req);
         return response($res["response"], $res["statusCode"]);
     }
 

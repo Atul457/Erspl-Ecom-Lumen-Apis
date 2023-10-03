@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('dob')->nullable(); 
             $table->string('email')->unique();
             $table->string('image')->nullable();
+            $table->string('token_id')->nullable();
             $table->integer('attempt')->default(0);
             $table->date('otp_datetime')->nullable();
             $table->string('last_name')->default("");

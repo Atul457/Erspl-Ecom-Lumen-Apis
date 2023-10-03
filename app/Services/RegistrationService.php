@@ -48,6 +48,7 @@ class RegistrationService
             [
                 "mobile" => "required|digits:10|exists:tbl_registration",
                 'password' => 'min:6',
+                'token' => 'string',
             ]
         );
 
@@ -55,6 +56,7 @@ class RegistrationService
         $otp = OTPHelper::generateOtp();
 
         $mobile = $data["mobile"];
+        $tokenId = $data["token"] ?? "";
         $password = $data["password"] ?? "";
         $user = $user->select("*")->where("mobile", $mobile)->first();
 
@@ -68,7 +70,8 @@ class RegistrationService
                 OTPHelper::sendOTP($otp, $mobile);
 
             $updated = Registration::where("mobile", $mobile)->update([
-                "otp" => $otp
+                "otp" => $otp,
+                "token_id" => $tokenId
             ]);
 
             if (!$updated)
@@ -95,6 +98,9 @@ class RegistrationService
                 "message" => "Your account is suspended."
             ]);
 
+        $updated = Registration::where("mobile", $mobile)->update([
+            "token_id" => $tokenId
+        ]);
         $token = Auth::setTTL(24 * 10 * 60)->login($user);
 
         return [
@@ -118,8 +124,13 @@ class RegistrationService
     /**
      * @TODO Document this
      */
-    public function logout()
+    public function logout(Request $req)
     {
+        Registration::where("id", $req->user()->id)
+            ->update([
+                "token_id" => null
+            ]);
+
         auth()->logout();
 
         return [
@@ -151,11 +162,14 @@ class RegistrationService
                 'digits' => ':attribute must be of :digits digits',
             ],
             [
+                'token' => 'string',
                 "otp" => "digits:4|required",
+                "mobile" => "required|digits:10",
                 "mobile" => "required|digits:10",
             ]
         );
 
+        $tokenId = $data["token"] ?? "";
         $whereQuery["mobile"] = $data["mobile"];
         $user = Registration::where($whereQuery)->first();
 
@@ -175,6 +189,11 @@ class RegistrationService
         } else
             Registration::where($whereQuery)->update([
                 "attempt" => 1
+            ]);
+
+        Registration::where("id", $user->id)
+            ->update([
+                "token_id" => $tokenId
             ]);
 
         $token = Auth::setTTL(24 * 10 * 60)->login($user);

@@ -47,6 +47,7 @@ class OrderController extends Controller
     }
 
 
+    
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @todo Document this
@@ -104,4 +105,41 @@ class OrderController extends Controller
         $res = $this->service->saveOrder($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function orderCancel(Request $req)
+    {
+        $res = $this->service->orderCancel($req);
+        return response($res["response"], $res["statusCode"]);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function orderReturnAcceptPartner(Request $req)
+    {
+        $res = $this->service->orderReturnAcceptPartner($req);
+        return response($res["response"], $res["statusCode"]);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function orderReturn(Request $req)
+    {
+        $res = $this->service->orderReturn($req);
+        return response($res["response"], $res["statusCode"]);
+    }
+    
 }

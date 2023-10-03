@@ -155,7 +155,6 @@ class RegistrationTempService
             ],
             "statusCode" => StatusCodes::OK
         ];
-
     }
 
 
@@ -187,7 +186,9 @@ class RegistrationTempService
         else
             OTPHelper::sendOTP($otp, $data["mobile"]);
 
-        $updated = Registration::where("mobile", $data["mobile"])->update(["otp" => $otp]);
+        $updated = Registration::where("mobile", $data["mobile"])->update([
+            "otp" => $otp
+        ]);
 
         return [
             "response" => [
@@ -231,6 +232,7 @@ class RegistrationTempService
                 "dob" => "date_format:Y-m-d",
                 'password' => 'required|min:6',
                 "referral_by" => "string|size:15",
+                "token" => "string",
                 "first_name" => "required|string|min:2",
                 'email' => 'required|email|unique:tbl_registration,email',
                 "alt_mobile" => "unique:tbl_registration,mobile|digits:10",
@@ -246,6 +248,7 @@ class RegistrationTempService
         $data["attempt"] = 1;
         $data["password"] = $hashedPassword;
         $data["otp"] = OTPHelper::generateOtp();
+        $data["token_id"] = $data["token"] ?? null;
         $data["reg_type"] = $defaultRegistrationType;
         $data["referral_code"] = $data['mobile'] . $referralPostFix;
 

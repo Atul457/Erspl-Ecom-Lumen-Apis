@@ -57,6 +57,23 @@ class UtilityHelper
     }
 
 
+    /**
+     * @todo document this
+     */
+    public static function disableForeignKeyChecks()
+    {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    }
+
+
+    /**
+     * @todo document this
+     */
+    public static function enableForeignKeyChecks()
+    {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+    }
+
 
     /**
      * @todo document this

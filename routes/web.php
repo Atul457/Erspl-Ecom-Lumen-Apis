@@ -88,9 +88,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/saveOrder', 'OrderController@saveOrder'); 
         $router->post('/orderList', 'OrderController@orderList'); 
         $router->post('/orderStage', 'OrderController@orderStage'); 
+        $router->post('/orderReturn', 'OrderController@orderReturn'); 
+        $router->post('/orderCancel', 'OrderController@orderCancel'); 
         $router->post('/getOrderStatus', 'OrderController@getOrderStatus'); 
         $router->post('/orderReferenceList', 'OrderController@orderReferenceList'); 
-
+        $router->post('/orderReturnAcceptPartner', 'OrderController@orderReturnAcceptPartner'); 
 
     });
 

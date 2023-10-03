@@ -7,6 +7,7 @@ use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\UtilityHelper;
 use App\Models\Cart;
 use App\Models\Employee;
 use App\Models\Home;
@@ -20,13 +21,18 @@ use App\Models\OrderDeliveryLogs;
 use App\Models\OrderEdited;
 use App\Models\OrderPrepaidTransaction;
 use App\Models\Product;
+use App\Models\Refund;
 use App\Models\Registration;
+use App\Models\ReturnOrder;
+use App\Models\SellerLeger;
 use App\Models\Shop;
 use App\Models\SubCategory;
 use App\Models\Wallet;
 use DateTime;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Http\Request;
+use PhpParser\Node\Expr;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -1274,5 +1280,807 @@ class OrderService
             ],
             "statusCode" => StatusCodes::OK
         ];
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function orderCancel(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                "orderId.exists" => "order with id: :input doesn't exist"
+            ],
+            [
+                "orderId" => "required|numeric|exists:order,order_id",
+                "reasonId" => "numeric",
+                "remark" => "string"
+            ]
+        );
+
+        $currentDate = date('Y-m-d H:i:s');
+        $orderId     = round($data['orderId']);
+        $reasonId    = $data['reasonId'];
+        $remark      = $data['remark'];
+        $date        = date('Y-m-d H:i:s');
+
+        $sql = Order::select("*", "total as sum(total)")
+            ->where("order_id", $orderId)
+            ->first()
+            ->toArray();
+
+        $data = $sql;
+
+        if (!($data['status'] < 2))
+            throw ExceptionHelper::unAuthorized([
+                "status" => 400,
+                "message" => "Order Already Dispatched or Cancelled"
+            ]);
+
+        $sqlDelete = Order::where("order_id", $orderId)
+            ->update([
+                "status" => 5,
+                "cancel_status" => 1,
+                "reason_id" => $reasonId ?? null,
+                "cancel_remark" => $remark ?? null,
+                "cancel_date" => $date
+            ]);
+
+        if (!$sqlDelete)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "The order could be updated"
+            ]);
+
+        $refundAmount = $data['sum(total)'];
+
+        OrderEdited::where("order_id", $orderId)
+            ->update([
+                "status" => 5,
+                "cancel_status" => 1,
+                "reason_id" => $reasonId ?? null,
+                "cancel_remark" => $remark ?? null,
+                "cancel_date" => $date
+            ]);
+
+        Employee::where("id", $data['deliveryboy_id'])
+            ->update([
+                "assign_status" => 0
+            ]);
+
+        OrderDeliveryLogs::insert([
+            "order_id" => $orderId,
+            "remark" => "Order Canceled By Customer",
+            "cust_id" => $data["customer_id"],
+            "datetime" => $date
+        ]);
+
+        $sqlTxn = OrderPrepaidTransaction::select("tcs", "tds")
+            ->where("order_id", $orderId)
+            ->first();
+
+        if (!$sqlTxn)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "prepaid transaction not found via order_id: $orderId"
+            ]);
+
+        $txnData = $sqlTxn->toArray();
+        $creditAmount = $txnData['tcs'] + $txnData['tds'];
+
+        if ($data['edit_status'] == 1 && $data['edit_confirm'] == 1) {
+
+            $sqlOrderEdit = OrderEdited::select("total as sum(total)")
+                ->where("order_id", $orderId)
+                ->first();
+
+            if (!$sqlOrderEdit)
+                throw ExceptionHelper::somethingWentWrong([
+                    "message" => "item not found in order edited table where order_id: $orderId"
+                ]);
+
+            $sqlOrderEditData = $sqlOrderEdit->toArray();
+            $refundAmount     = $sqlOrderEditData['sum(total)'];
+
+            $sqlTxn = OrderPrepaidTransaction::select("tcs", "tds")
+                ->where("order_id", $orderId)
+                ->first();
+
+            $txnData = $sqlTxn->toArray();
+            $creditAmount = $txnData['edit_tcs'] + $txnData['edit_tds'];
+        }
+
+
+        if ($data['payment_type'] == 'PREPAID' || $data['payment_type'] == 'WALLET') {
+
+            $sqlEditTotal = Order::select("total as sum(total)", "shop_discount", "offer_total")
+                ->where("order_id", $orderId);
+
+            $editTotalData = $sqlEditTotal
+                ->get()
+                ->toArray();
+
+            if ($data['edit_status'] == 1 && $data['edit_confirm'] == 1) {
+
+                $sqlEditTotal = OrderEdited::select("total as sum(total)", "shop_discount", "offer_total")
+                    ->where("order_id", $orderId)
+                    ->first();
+
+                if (!$sqlEditTotal)
+                    throw ExceptionHelper::somethingWentWrong([
+                        "message" => "item not found in order edited table where order_id: $orderId"
+                    ]);
+            }
+
+            $editTotalData = $sqlEditTotal->toArray();
+            $refundAmount1 = $editTotalData['sum(`total`)'] - ($editTotalData['shop_discount'] + $editTotalData['offer_total']);
+            $refundAmount1 = sprintf('%0.2f', $refundAmount1);
+        }
+
+        if ($data['payment_type'] == 'PREPAID') {
+
+            $refund = new Refund();
+            $refund->order_date = $data['order_date'];
+            $refund->customer_id = $data['customer_id'];
+            $refund->customer_name = $data['name'];
+            $refund->order_reference = $data['order_reference'];
+            $refund->order_id = $data['order_id'];
+            $refund->incomimg_txn_id = $data['paytm_txn_id'];
+            $refund->source = $data['payment_mode'];
+            $refund->orignal_order_total = $refundAmount;
+            $refund->edit_order_total = 0;
+            $refund->reason = 'ORDER CANCELLED BY CUSTOMER';
+            $refund->refund_amount = $refundAmount1;
+            $refund->status = 0;
+            $refund->save();
+
+            $sellerLedger = new SellerLeger();
+            $sellerLedger->order_date = $data['order_date'];
+            $sellerLedger->shop_id = $data['shop_id'];
+            $sellerLedger->shop_name = CommonHelper::shopName($data['shop_id']);
+            $sellerLedger->shop_city_id = $data['shop_city_id'];
+            $sellerLedger->order_reference = $data['order_reference'];
+            $sellerLedger->order_id = $data['order_id'];
+            $sellerLedger->transaction_detail = $data['paytm_txn_id'];
+            $sellerLedger->payment_mode = $data['payment_mode'];
+            $sellerLedger->particular = 'ORDER CANCELLED - ' . $data['order_id'];
+            $sellerLedger->debit = $refundAmount;
+            $sellerLedger->credit = 0;
+            $sellerLedger->datetime = $currentDate;
+            $sellerLedger->case = 0;
+            $sellerLedger->save();
+
+            $sellerLedger = new SellerLeger();
+            $sellerLedger->order_date = $data['order_date'];
+            $sellerLedger->shop_id = $data['shop_id'];
+            $sellerLedger->shop_name = CommonHelper::shopName($data['shop_id']);
+            $sellerLedger->shop_city_id = $data['shop_city_id'];
+            $sellerLedger->order_reference = $data['order_reference'];
+            $sellerLedger->order_id = $data['order_id'];
+            $sellerLedger->transaction_detail = $data['paytm_txn_id'];
+            $sellerLedger->payment_mode = $data['payment_mode'];
+            $sellerLedger->particular = 'TDS TCS REVERSAL - ' . $data['order_id'];
+            $sellerLedger->debit = 0;
+            $sellerLedger->credit = $creditAmount;
+            $sellerLedger->datetime = $currentDate;
+            $sellerLedger->case = 0;
+            $sellerLedger->save();
+        }
+
+
+        if ($data['payment_type'] == 'WALLET') {
+
+            $sellerLedger = new SellerLeger();
+            $sellerLedger->order_date = $data['order_date'];
+            $sellerLedger->shop_id = $data['shop_id'];
+            $sellerLedger->shop_name = CommonHelper::shopName($data['shop_id']);
+            $sellerLedger->shop_city_id = $data['shop_city_id'];
+            $sellerLedger->order_reference = $data['order_reference'];
+            $sellerLedger->order_id = $data['order_id'];
+            $sellerLedger->transaction_detail = $data['paytm_txn_id'];
+            $sellerLedger->payment_mode = $data['payment_mode'];
+            $sellerLedger->particular = 'ORDER CANCELLED - ' . $data['order_id'];
+            $sellerLedger->debit = $refundAmount;
+            $sellerLedger->credit = 0;
+            $sellerLedger->datetime = $currentDate;
+            $sellerLedger->case = 0;
+            $sellerLedger->save();
+
+            $sellerLedger = new SellerLeger();
+            $sellerLedger->order_date = $data['order_date'];
+            $sellerLedger->shop_id = $data['shop_id'];
+            $sellerLedger->shop_name = CommonHelper::shopName($data['shop_id']);
+            $sellerLedger->shop_city_id = $data['shop_city_id'];
+            $sellerLedger->order_reference = $data['order_reference'];
+            $sellerLedger->order_id = $data['order_id'];
+            $sellerLedger->transaction_detail = $data['paytm_txn_id'];
+            $sellerLedger->payment_mode = $data['payment_mode'];
+            $sellerLedger->particular = 'TDS TCS REVERSAL - ' . $data['order_id'];
+            $sellerLedger->debit = 0;
+            $sellerLedger->credit = $creditAmount;
+            $sellerLedger->datetime = $currentDate;
+            $sellerLedger->case = 0;
+            $sellerLedger->save();
+
+            $wallet = new Wallet();
+            $wallet->customer_id = $data['customer_id'];
+            $wallet->order_reference = $data['order_reference'];
+            $wallet->order_id = $data['order_id'];
+            $wallet->amount = $refundAmount1;
+            $wallet->remark = 'Order Canceled Refund - ' . $data['order_id'];
+            $wallet->payment_status = 1;
+            $wallet->status = 1;
+            $wallet->date = $currentDate;
+            $sqlWallet =  $wallet->save();
+
+            if ($sqlWallet) {
+
+                $sqlReg = Registration::select("wallet_balance")
+                    ->where("id", $data['customer_id']);
+                $regData = $sqlReg->first()?->toArray();
+                $customerId = $data['customer_id'];
+
+                if (!$regData)
+                    throw ExceptionHelper::somethingWentWrong([
+                        "message" =>    "user with id: $customerId doesn't exists"
+                    ]);
+
+                $updateBalance = $regData['wallet_balance'] + $refundAmount1;
+                Registration::where("id", $customerId)
+                    ->update([
+                        "wallet_balance" => $updateBalance
+                    ]);
+            }
+        }
+
+        $title = "Oops!! Customers cancelled order #" . $orderId;
+        $body = CommonHelper::cancelReason($reasonId);
+
+        /* Send Notifiction for Shopkeeper */
+        CommonHelper::ceoCancelOrderNotification($title, $body, 'cancelOrder', $orderId, $data['shop_id']);
+
+        $title = "The Order has been cancelled. Order ID - #" . $orderId;
+        $body = CommonHelper::cancelReason($reasonId);
+
+        /* Send Notifiction for Delivery Boy */
+        $employeeId = $data['deliveryboy_id'];
+        $sqlToken = Employee::select("token_id")
+            ->where("id", $employeeId);
+
+        $sqlTokenData = $sqlToken
+            ->first()
+            ?->toArray();
+
+        if (!$sqlTokenData)
+            throw ExceptionHelper::somethingWentWrong([
+                "employee with id: $employeeId doesn't exists"
+            ]);
+
+        CommonHelper::starCancelOrderNotification(
+            $title,
+            $body,
+            $orderId,
+            $sqlTokenData['token_id']
+        );
+
+        return [
+            "response" => [
+                "status" => true,
+                "statusCode" => StatusCodes::OK,
+                "data" => [],
+                "message" => "Order Cancelled.",
+            ],
+            "statusCode" => StatusCodes::OK
+        ];
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function orderReturnAcceptPartner(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                "orderId.exists" => "order with id: :input doesn't exist"
+            ],
+            [
+                "orderId" => "required|numeric|exists:order,order_id"
+            ]
+        );
+
+        $status  = 1;
+        $deliveryBoyList = [];
+        $otp = OTPHelper::generateOtp();
+        $orderId  = round($data['orderId']);
+
+        $sqlOrder = Order::select("shop_id", "latitude", "longitude", "customer_id", "name", "mobile", "total as sum(total)")
+            ->where("order_id", $orderId);
+
+        $sqlOrderData = $sqlOrder
+            ->first()
+            ->toArray();
+
+        $sqlDelivery = Employee::select("id", "latitude", "longitude")
+            ->where([
+                "designation_id" => 3,
+                "status" => 1,
+                "online_status" => 1,
+                "assign_status" => 0,
+            ]);
+
+        if ($sqlOrderData['shop_id'] == 2222222)
+            $deliveryBoyId = 614;
+        else {
+            foreach ($sqlDelivery as $dataDelivery) {
+                $distance = UtilityHelper::getDistanceBetweenPlaces(
+                    [
+                        "lat" => $sqlOrderData['latitude'],
+                        "long" => $sqlOrderData['longitude'],
+                    ],
+                    [
+                        "lat" => $dataDelivery['latitude'],
+                        "long" => $dataDelivery['longitude']
+                    ]
+                );
+
+                $deliveryBoyList[] = array('deliveryBoyId' => $dataDelivery['id'], 'distance' => $distance);
+                $columns = array_column($deliveryBoyList, 'distance');
+                array_multisort($columns, SORT_ASC, $deliveryBoyList);
+            }
+
+            $count = sizeof($deliveryBoyList);
+
+            if ($count > 0)
+                $deliveryBoyId = $deliveryBoyList[0]['deliveryBoyId'];
+            else
+                $deliveryBoyId = "";
+        }
+
+        $sqlOrder1 = Order::where("order_id", $orderId)
+            ->update([
+                "otp" => $otp,
+                "return_status" => $status,
+                "return_deliveryboy_id" => $deliveryBoyId,
+            ]);
+
+        if (!$sqlOrder1)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "unable to update order"
+            ]);
+
+        $sqlOrder1 = OrderEdited::where("order_id", $orderId)
+            ->update([
+                "otp" => $otp,
+                "return_status" => $status,
+                "return_deliveryboy_id" => $deliveryBoyId,
+            ]);
+
+        $title = "Return Request against order #" . $orderId . " is accepted";
+        $body  = "Click to View order detail";
+
+        $arrNotification["title"]   = $title;
+        $arrNotification["body"]    = $body;
+        $arrNotification["sound"]   = "default";
+        $arrNotification["type"]    = "orderDetail";
+        $arrNotification["dataId"]  = $orderId;
+        $arrNotification["dataId2"] = "";
+
+        $sqlToken1 = Registration::select("token_id")
+            ->where("id", $sqlOrderData['customer_id']);
+        $sqlTokenData1 = $sqlToken1->first()?->toArray();
+
+        CommonHelper::sendPushNotification($sqlTokenData1['token_id'], $arrNotification);
+
+        $title = "Order ID #" . $orderId . " Return Order Received";
+        $body  = "Open the App to check the details";
+
+        $sqlToken = Employee::select("token_id")
+            ->where("id", $deliveryBoyId);
+        $sqlTokenData = $sqlToken->first()?->toArray();
+
+        if (!$sqlTokenData)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "Employee not found in employee table via id=$deliveryBoyId"
+            ]);
+
+        CommonHelper::starNewOrderNotification(
+            $title,
+            $body,
+            $orderId,
+            $sqlTokenData['token_id']
+        );
+
+        /* OTP to user */
+        $mobile = $sqlOrderData['mobile'];
+        OTPHelper::sendOTP($otp, $mobile, $sqlOrderData['name']);
+
+        return [
+            "response" => [
+                "data" => null,
+                "status" => true,
+                "statusCode" => StatusCodes::OK,
+                "message" => "Return Request Accepted",
+            ],
+            "statusCode" => StatusCodes::OK
+        ];
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public static function orderReturn(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                "orderId.exists" => "order with id: :input doesn't exist"
+            ],
+            [
+                "orderId" => "required|numeric|exists:order,order_id",
+                "reasonId" => "numeric",
+                "remark" => "string"
+            ]
+        );
+
+        $orderId = $_POST['orderId'];
+        $productIds = $_POST['productIds'] ?? [];
+        $reasonId = $_POST['reasonId'];
+        $remark = $_POST['remark'];
+        $currentDate = date('Y-m-d H:i:s');
+
+        $otp = OTPHelper::generateOtp();
+
+        $sqlOrder = Order::select("*")
+            ->where("order_id", $orderId);
+
+        $orderData = $sqlOrder->first()?->toArray();
+
+        if (!$orderData)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "order with order_id: $orderId doesn't exists"
+            ]);
+
+        $deliveredTime = date('Y-m-d H:i:s', strtotime($orderData['delivered_date']));
+        $returnTime    = date('Y-m-d H:i:s', strtotime($deliveredTime . ' +1 days'));
+
+        if (!($currentDate <= $returnTime))
+            throw ExceptionHelper::unAuthorized([
+                "message" => "Return Window Is Closed"
+            ]);
+
+        if (!empty($productIds)) {
+
+            $loop = 0;
+            $arrproductIds = json_decode($productIds);
+
+            foreach ($arrproductIds as $aPs) {
+
+                $productId = $aPs;
+                Order::where('order_id', $orderId)
+                    ->where('product_id', $productId)
+                    ->update([
+                        "otp" => $otp,
+                        "accept_status" => 0,
+                        "status" => 7,
+                        "return_reason_id" => $reasonId,
+                        "return_remark" => $remark,
+                        "return_date" => $currentDate,
+                    ]);
+
+                OrderEdited::where('order_id', $orderId)
+                    ->where('product_id', $aPs)
+                    ->update([
+                        "otp" => $otp,
+                        "accept_status" => 0,
+                        "status" => 7,
+                        "return_reason_id" => $reasonId,
+                        "return_remark" => $remark,
+                        "return_date" => $currentDate,
+                    ]);
+
+                /*Start Remove Special Product*/
+                $finalTable = "tbl_order";
+
+                if ($orderData['edit_confirm'] == 1)
+                    $finalTable = "tbl_order_edited";
+
+                $sqlOrderSpecial = null;
+
+                if ($finalTable === "tbl_order") {
+                    $sqlOrderSpecial = Order::select("product_id")
+                        ->where([
+                            "order_id" => $orderId,
+                            "offer_primary_id" => $productId
+                        ])
+                        ->where("offer_id", ">", 0);
+                } else {
+                    $sqlOrderSpecial = OrderEdited::select("product_id")
+                        ->where([
+                            "order_id" => $orderId,
+                            "offer_primary_id" => $productId
+                        ])
+                        ->where("offer_id", ">", 0);
+                }
+
+                if ($sqlOrderSpecial->count()) {
+
+                    $sqlOrderSpecialData = $sqlOrderSpecial
+                        ->first()
+                        ->toArray();
+
+                    Order::where('order_id', $orderId)
+                        ->where('product_id', $sqlOrderSpecialData['product_id'])
+                        ->update([
+                            'otp' => $otp,
+                            'accept_status' => 0,
+                            'status' => 7,
+                            'return_reason_id' => $reasonId,
+                            'return_remark' => $remark,
+                            'return_date' => $currentDate,
+                        ]);
+
+                    OrderEdited::where('order_id', $orderId)
+                        ->where('product_id', $sqlOrderSpecialData['product_id'])
+                        ->update([
+                            'otp' => $otp,
+                            'accept_status' => 0,
+                            'status' => 7,
+                            'return_reason_id' => $reasonId,
+                            'return_remark' => $remark,
+                            'return_date' => $currentDate,
+                        ]);
+                }
+
+                /*End Remove Special Product*/
+                $loop++;
+            }
+
+            if (!$loop)
+                throw ExceptionHelper::somethingWentWrong([
+                    "message" => "Loop count is $loop"
+                ]);
+
+            OrderEdited::where('order_id', $orderId)
+                ->update([
+                    "otp" => $otp
+                ]);
+
+            Order::where('order_id', $orderId)
+                ->update([
+                    "otp" => $otp
+                ]);
+
+            $sqlEditTotal = Order::select("total as sum(`total`)", "shop_total", "shop_discount")
+                ->where([
+                    "order_id" => $orderId,
+                    "status" => 7,
+                    "offer_type" => 0,
+                ]);
+
+            $editTotalData = $sqlEditTotal
+                ->first()
+                ?->toArray();
+
+            if (!$editTotalData)
+                throw ExceptionHelper::somethingWentWrong([
+                    "message" => "order where order_id: $orderId, status: 7 and offer_type=0 doesn't exists"
+                ]);
+
+            if ($orderData['edit_status'] == 1 && $orderData['edit_confirm'] == 1) {
+                $sqlEditTotal = OrderEdited::select("total as sum(`total`)", "shop_total", "shop_discount")
+                    ->where([
+                        "order_id" => $orderId,
+                        "status" => 7,
+                        "offer_type" => 0,
+                    ])
+                    ->where("qty", "!=", 0);
+
+                $editTotalData = $sqlEditTotal
+                    ->first()
+                    ?->toArray();
+
+                if (!$editTotalData)
+                    throw ExceptionHelper::somethingWentWrong([
+                        "message" => "order_edited row where order_id: $orderId, status: 7, qty != 0 and offer_type=0 doesn't exists"
+                    ]);
+            }
+
+            $discount = ($editTotalData['sum(`total`)'] * $editTotalData['shop_discount']) / $editTotalData['shop_total'];
+            $discount = sprintf('%0.2f', $discount);
+            $refundAmount1 = $editTotalData['sum(`total`)'] - ($discount);
+            $refundAmount1 = sprintf('%0.2f', $refundAmount1);
+
+            Order::where('order_id', $orderId)
+                ->where('status', 7)
+                ->update(['refund_amount' => $refundAmount1]);
+
+            OrderEdited::where('order_id', $orderId)
+                ->where('status', 7)
+                ->update(['refund_amount' => $refundAmount1]);
+
+            $title = "Order has been returned #" . $orderId;
+            $body = CommonHelper::cancelReason($reasonId);
+            CommonHelper::ceoCancelOrderNotification(
+                $title,
+                $body,
+                'returnOrder',
+                $orderId,
+                $orderData['shop_id']
+            );
+
+            return [
+                "response" => [
+                    "status" => true,
+                    "statusCode" => StatusCodes::OK,
+                    "data" => [],
+                    "message" => "Return Request Submitted.",
+                ],
+                "statusCode" => StatusCodes::OK
+            ];
+        } else {
+
+            $sqlReturn =  Order::where('order_id', $orderId)
+                ->update([
+                    'otp' => $otp,
+                    'accept_status' => 0,
+                    'status' => 7,
+                    'return_reason_id' => $reasonId,
+                    'return_remark' => $remark,
+                    'return_date' => $currentDate,
+                ]);
+
+            if (!$sqlReturn)
+                throw ExceptionHelper::somethingWentWrong([
+                    "message" => "unable to update order where order_id: $orderId"
+                ]);
+
+            OrderEdited::where('order_id', $orderId)
+                ->update([
+                    'otp' => $otp,
+                    'accept_status' => 0,
+                    'status' => 7,
+                    'return_reason_id' => $reasonId,
+                    'return_remark' => $remark,
+                    'return_date' => $currentDate,
+                ]);
+
+            $sqlCheck = ReturnOrder::where('order_id', $orderId);
+
+            if (!($sqlCheck->count())) {
+
+                $sqlInsert =  DB::table('tbl_return_order')->insertUsing(
+                    [
+                        'otp',
+                        'order_reference',
+                        'order_id',
+                        'shop_id',
+                        'customer_id',
+                        'product_id',
+                        'product_barcode',
+                        'product_name',
+                        'weight',
+                        'price',
+                        'mrp',
+                        'qty',
+                        'return_reason_id',
+                        'return_remark',
+                    ],
+                    function ($query) use ($orderId) {
+                        $query->select([
+                            'otp',
+                            'order_reference',
+                            'order_id',
+                            'shop_id',
+                            'customer_id',
+                            'product_id',
+                            'product_barcode',
+                            'product_name',
+                            'weight',
+                            'price',
+                            'mrp',
+                            'qty',
+                            'return_reason_id',
+                            'return_remark',
+                        ])->from('order')->where('order_id', $orderId);
+                    }
+                );
+
+                if ($sqlInsert) {
+
+                    $Pid = DB::getPdo()->lastInsertId();
+                    $returnDate = date('Y-m-d');
+
+                    $sqlReturnCheck = DB::select(DB::raw("select max(return_id) from `tbl_return_order`"))[0];
+                    $maxReturnId = $sqlReturnCheck->{'max(return_id)'};
+
+                    if ($maxReturnId == NULL)
+                        $returnId = 1;
+                    else
+                        $returnId = $maxReturnId + 1;
+
+                    ReturnOrder::where("id", $Pid)
+                        ->update([
+                            "return_id" => $returnId,
+                            "datetime" => $currentDate,
+                            "return_date" => $returnDate,
+                        ]);
+                }
+            }
+
+            $sqlEditTotal = Order::selectRaw('total as sum(`total`), shop_discount, offer_total')
+                ->where('order_id', $orderId)
+                ->where('status', 7)
+                ->first()
+                ?->toArray();
+
+            if (!$sqlEditTotal)
+                throw ExceptionHelper::somethingWentWrong([
+                    "order row with id: $orderId and status: 7 doesn't exists"
+                ]);
+
+            $editTotalData = $sqlEditTotal;
+
+            if ($orderData['edit_status'] == 1 && $orderData['edit_confirm'] == 1) {
+                $sqlEditTotal = OrderEdited::select("total as sum(`total`)", "shop_total", "shop_discount")
+                    ->where([
+                        "order_id" => $orderId,
+                        "status" => 7,
+                        "offer_type" => 0,
+                    ])
+                    ->where("qty", "!=", 0);
+
+                $editTotalData = $sqlEditTotal
+                    ->first()
+                    ?->toArray();
+
+                if (!$editTotalData)
+                    throw ExceptionHelper::somethingWentWrong([
+                        "message" => "order_edited row where order_id: $orderId, status: 7, qty != 0 and offer_type=0 doesn't exists"
+                    ]);
+            }
+
+            $refundAmount1 = $editTotalData['sum(`total`)'] - ($editTotalData['shop_discount'] + $editTotalData['offer_total']);
+            $refundAmount1 = sprintf('%0.2f', $refundAmount1);
+
+            ReturnOrder::where('id', $Pid)->update(['return_total' => $refundAmount1]);
+
+            Order::where('order_id', $orderId)
+                ->where('status', 7)
+                ->update(['refund_amount' => $refundAmount1]);
+
+            OrderEdited::where('order_id', $orderId)
+                ->where('status', 7)
+                ->update(['refund_amount' => $refundAmount1]);
+
+            $title = "Order has been returned #" . $orderId;
+            $body = CommonHelper::cancelReason($reasonId);
+
+            CommonHelper::ceoCancelOrderNotification(
+                $title,
+                $body,
+                'returnOrder',
+                $orderId,
+                $orderData['shop_id']
+            );
+
+            return [
+                "response" => [
+                    "status" => true,
+                    "statusCode" => StatusCodes::OK,
+                    "data" => [],
+                    "message" => "Return Request Submitted.",
+                ],
+                "statusCode" => StatusCodes::OK
+            ];
+        }
     }
 }

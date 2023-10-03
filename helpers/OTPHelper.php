@@ -12,24 +12,30 @@ class OTPHelper
      *
      * @param string $otp The OTP to send.
      * @param string $mobile The mobile number to send the OTP to.
+     * @param string $name The name of the person to sent the OTP to. If you pass name as param then this function works for sending delivery code to the person
      * @return void
      */
-    public static function sendOTP($otp, $mobile)
+    public static function sendOTP($otp, $mobile, $name = null)
     {
+        $curlUrl = "";
+        $message = "";
+        $isForSendingDeliveryCode = !empty($name);
+
         // Fetch configuration from the database
         $home = Home::first();
         $smsVendor = $home->sms_vendor;
 
-        $curlUrl = "";
-        $message = "";
-
         // Customize message and other variables
-        if ($smsVendor == "ZAP") {
-            $curlUrl = $home->zap_key;
-            $message = "Dear Customer,\nlogin to eRSPL OTP is $otp.Please do not share with anyone.";
+        if ($isForSendingDeliveryCode) {
+            $message = "Dear " . $name . ",\nYour eRSPL Delivery Code is " . $otp . ". Please share this with our delivery partner only AFTER receiving your order.";
         } else {
-            $curlUrl = $home->fortius_key;
-            $message = "Dear Customer,\nOTP to login to eRSPL is " . $otp . ". Please do not share with anyone.";
+            if ($smsVendor == "ZAP") {
+                $curlUrl = $home->zap_key;
+                $message = "Dear Customer,\nlogin to eRSPL OTP is $otp.Please do not share with anyone.";
+            } else {
+                $curlUrl = $home->fortius_key;
+                $message = "Dear Customer,\nOTP to login to eRSPL is " . $otp . ". Please do not share with anyone.";
+            }
         }
 
         // Replace placeholders in the URL with actual values
@@ -52,7 +58,7 @@ class OTPHelper
         $err = curl_error($curl);
         curl_close($curl);
 
-        if(!empty($err))
+        if (!empty($err))
             Log::error($err);
 
         // Process the response or handle errors
