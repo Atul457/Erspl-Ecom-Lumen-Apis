@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('middle_name')->default("");
             $table->integer('guest_status')->default(0);
             $table->string('referral_code')->nullable();
+            $table->longText('access_token')->nullable();
             $table->integer('wallet_balance')->nullable();
             $table->date('suspended_datetime')->nullable();
             $table->integer('status')->default(1)->comment('0 = Inactive, 1 = Active');

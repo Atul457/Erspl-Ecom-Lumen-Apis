@@ -96,4 +96,16 @@ class RegistrationController extends Controller
         $res = $this->service->getProfile($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @TODO Document this
+     */
+    public function updateToken(Request $req)
+    {
+        $res = $this->service->updateToken($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

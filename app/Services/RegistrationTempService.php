@@ -138,12 +138,25 @@ class RegistrationTempService
         unset($user["updated_at"]);
 
         $user = Registration::insert($user);
-        $user = Registration::where($whereQuery)->first();
+        $user = Registration::select("id", "dob", "image", "email", "gender", "mobile", "status", "reg_type", "last_name", "alt_mobile", "first_name", "referral_by", "middle_name", "email_status", "password")
+            ->where($whereQuery)
+            ->first();
 
         if (!$user)
             throw ExceptionHelper::somethingWentWrong();
 
+        $keysToHide = ['password'];
+        $user = $user->makeHidden($keysToHide);
         $token = Auth::setTTL(24 * 10 * 60)->login($user);
+
+        RegistrationTemp::where($whereQuery)->update([
+            "access_token" => $token
+        ]);
+
+        Registration::where($whereQuery)->update([
+            "access_token" => $token
+        ]);
+
         $response["token"] = $token;
 
         return [

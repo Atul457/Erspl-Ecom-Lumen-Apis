@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cancel_reason', function (Blueprint $table) {
+        Schema::create('tbl_cancel_reason', function (Blueprint $table) {
             $table->id();
             $table->string("name")->nullable();
             $table->integer("type")->nullable()->comment("1=user 2=shop 3=deliveryboy");
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cancel_reason');
+        Schema::dropIfExists('tbl_cancel_reason');
     }
 };

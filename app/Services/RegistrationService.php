@@ -7,6 +7,7 @@ use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Registration;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Lumen\Http\Request;
@@ -58,10 +59,12 @@ class RegistrationService
         $mobile = $data["mobile"];
         $tokenId = $data["token"] ?? "";
         $password = $data["password"] ?? "";
-        $user = $user->select("*")->where("mobile", $mobile)->first();
+
+        $user = $user->select("id", "dob", "image", "email", "gender", "mobile", "status", "reg_type", "last_name", "alt_mobile", "first_name", "referral_by", "middle_name", "email_status", "password")
+            ->where("mobile", $mobile)
+            ->first();
 
         // If password is empty - use otp flow
-
         if (empty($password)) {
 
             if ($this->isDefaultMobile($data["mobile"]))
@@ -98,10 +101,14 @@ class RegistrationService
                 "message" => "Your account is suspended."
             ]);
 
-        $updated = Registration::where("mobile", $mobile)->update([
-            "token_id" => $tokenId
-        ]);
+        $keysToHide = ['password'];
+        $user = $user->makeHidden($keysToHide);
         $token = Auth::setTTL(24 * 10 * 60)->login($user);
+
+        Registration::where("mobile", $mobile)->update([
+            "token_id" => $tokenId,
+            "access_token" => $token
+        ]);
 
         return [
             "response" => [
@@ -109,7 +116,7 @@ class RegistrationService
                 "status" => true,
                 "statusCode" => 200,
                 "data" => [
-                    "token" => $token
+                    "token" => $token,
                 ],
             ],
             "statusCode" => StatusCodes::OK
@@ -126,11 +133,6 @@ class RegistrationService
      */
     public function logout(Request $req)
     {
-        Registration::where("id", $req->user()->id)
-            ->update([
-                "token_id" => null
-            ]);
-
         auth()->logout();
 
         return [
@@ -171,7 +173,9 @@ class RegistrationService
 
         $tokenId = $data["token"] ?? "";
         $whereQuery["mobile"] = $data["mobile"];
-        $user = Registration::where($whereQuery)->first();
+        $user = Registration::select("id", "dob", "otp", "image", "email", "gender", "mobile", "status", "reg_type", "last_name", "alt_mobile", "first_name", "referral_by", "middle_name", "email_status", "password")
+            ->where($whereQuery)
+            ->first();
 
         if (!$user)
             throw ExceptionHelper::unAuthorized([
@@ -191,12 +195,15 @@ class RegistrationService
                 "attempt" => 1
             ]);
 
-        Registration::where("id", $user->id)
-            ->update([
-                "token_id" => $tokenId
-            ]);
-
+        $keysToHide = ['password', 'otp'];
+        $user = $user->makeHidden($keysToHide);
         $token = Auth::setTTL(24 * 10 * 60)->login($user);
+
+        Registration::where("id", $user->id)->update([
+            "token_id" => $tokenId,
+            "access_token" => $token
+        ]);
+
         $response["token"] = $token;
 
         return [
@@ -237,6 +244,53 @@ class RegistrationService
                 "status" => true,
                 "message" => null,
                 "data" => $profileData,
+                "statusCode" => StatusCodes::OK,
+            ],
+            "statusCode" => StatusCodes::OK
+        ];
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @TODO Document this
+     */
+    public function updateToken(Request $req)
+    {
+        $tokenWithBearer = $req->header('Authorization') ?? "";
+        $token = explode(" ", $tokenWithBearer)[1] ?? "";
+
+        if (empty($token))
+            throw ExceptionHelper::unAuthorized([
+                "message" => "Invalid token sent"
+            ]);
+
+        $whereQuery = [
+            "access_token" => $token
+        ];
+
+        $user = Registration::select("id", "dob", "image", "email", "gender", "mobile", "status", "reg_type", "last_name", "alt_mobile", "first_name", "referral_by", "middle_name", "email_status")
+            ->where($whereQuery)
+            ->first();
+
+        if (!$user)
+            throw ExceptionHelper::unAuthorized([
+                "message" => "Invalid token sent"
+            ]);
+
+        $token = Auth::setTTL(24 * 10 * 60)->login($user);
+
+        Registration::where($whereQuery)
+            ->update([
+                "access_token" => $token
+            ]);
+
+        return [
+            "response" => [
+                "status" => true,
+                "message" => null,
+                "data" => $token,
                 "statusCode" => StatusCodes::OK,
             ],
             "statusCode" => StatusCodes::OK

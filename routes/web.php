@@ -83,7 +83,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/updateCart', 'CartController@updateCart'); 
         $router->post('/wishToCart', 'CartController@wishToCart'); 
         
-        
         // Order
         $router->post('/saveOrder', 'OrderController@saveOrder'); 
         $router->post('/orderList', 'OrderController@orderList'); 
@@ -92,6 +91,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/orderCancel', 'OrderController@orderCancel'); 
         $router->post('/getOrderStatus', 'OrderController@getOrderStatus'); 
         $router->post('/orderReferenceList', 'OrderController@orderReferenceList'); 
+        $router->post('/orderCompleteCancel', 'OrderController@orderCompleteCancel'); 
         $router->post('/orderReturnAcceptPartner', 'OrderController@orderReturnAcceptPartner'); 
 
     });
@@ -108,4 +108,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('/checkLoginOtp', 'RegistrationController@checkLoginOtp');
     $router->post('/checkRegOtp', 'RegistrationTempController@checkRegOtp');
     $router->post('/signupAccount', 'RegistrationTempController@signupAccount');
+    $router->post('/updateToken', 'RegistrationController@updateToken');
+    
 });

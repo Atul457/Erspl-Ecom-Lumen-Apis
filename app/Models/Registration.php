@@ -83,6 +83,21 @@ class Registration extends Model implements AuthenticatableContract, Authorizabl
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'id' => $this->id,
+            'dob' => $this->dob,
+            'image' => $this->image,
+            'email' => $this->email,
+            'gender' => $this->gender,
+            'mobile' => $this->mobile,
+            'status' => $this->status,
+            'reg_type' => $this->reg_type,
+            'last_name' => $this->last_name,
+            'alt_mobile' => $this->alt_mobile,
+            'first_name' => $this->first_name,
+            'referral_by' => $this->referral_by,
+            'middle_name' => $this->middle_name,
+            'email_status' => $this->email_status,
+        ];
     }
 }
