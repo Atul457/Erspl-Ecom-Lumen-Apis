@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Models\CancelReason;
 use App\Models\Home;
+use App\Models\Product;
 use App\Models\Shop;
 use App\Models\UomType;
 
@@ -221,6 +222,16 @@ class CommonHelper
     }
 
 
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public static function productHsn($productId)
+    {
+        $sqlProduct = Product::find($productId);
+        return $sqlProduct['hsn_code'] ?? null;
+    }
 
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

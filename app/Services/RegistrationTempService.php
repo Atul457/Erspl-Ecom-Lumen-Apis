@@ -124,7 +124,8 @@ class RegistrationTempService
             RegistrationTemp::where($whereQuery)->update([
                 "attempt" => $user["attempt"] + 1
             ]);
-            throw ExceptionHelper::unAuthorized([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::UNAUTHORIZED,
                 "message" => "Invalid OTP",
             ]);
         } else
@@ -143,18 +144,20 @@ class RegistrationTempService
             ->first();
 
         if (!$user)
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error([
+                "message" => "user not found with mobile: ".$whereQuery["mobile"].""
+            ]);
 
         $keysToHide = ['password'];
         $user = $user->makeHidden($keysToHide);
         $token = Auth::setTTL(24 * 10 * 60)->login($user);
 
         RegistrationTemp::where($whereQuery)->update([
-            "access_token" => $token
+            "tInfo_temp" => $token
         ]);
 
         Registration::where($whereQuery)->update([
-            "access_token" => $token
+            "tInfo_temp" => $token
         ]);
 
         $response["token"] = $token;
@@ -190,7 +193,8 @@ class RegistrationTempService
         $userWithTable = $this->getUserWithTable($data["mobile"]);
 
         if (!$userWithTable["user"])
-            throw ExceptionHelper::unAuthorized([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::UNAUTHORIZED,
                 "message" => "This mobile does't Registered."
             ]);
 
@@ -269,7 +273,8 @@ class RegistrationTempService
         $isReferralByValid = $this->isReferralByValid($data["referral_by"] ?? "");
 
         if (!$isReferralByValid)
-            throw ExceptionHelper::unAuthorized([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::UNAUTHORIZED,
                 'message' => "Enter a valid Referral Code."
             ]);
 
@@ -279,7 +284,7 @@ class RegistrationTempService
         $insertedOrUpdated = $this->manageUserInTemp($data);
 
         if (!$insertedOrUpdated)
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
         OTPHelper::sendOTP($data["otp"], $data["mobile"]);
 

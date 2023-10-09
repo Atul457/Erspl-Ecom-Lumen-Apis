@@ -101,7 +101,7 @@ class AddressBookService
                     "statusCode" => StatusCodes::OK
                 ];
             else
-                throw ExceptionHelper::somethingWentWrong();
+                throw ExceptionHelper::error();
         }
 
         $dataToInsert["customer_id"] = $userId;
@@ -111,7 +111,7 @@ class AddressBookService
         $message = "Address Successfully Saved.";
 
         if (!$insertedAddressId)
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
         return [
             "response" => [
@@ -156,7 +156,8 @@ class AddressBookService
             ->toArray();
 
         if (!count($addresses))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Address not found.",
             ]);
 
@@ -200,7 +201,7 @@ class AddressBookService
                     "default_status" => 0
                 ]);
             if (!$updated)
-                throw ExceptionHelper::somethingWentWrong();
+                throw ExceptionHelper::error();
         }
 
         $updated = AddressBook::where("id", $data["addressId"])
@@ -209,7 +210,7 @@ class AddressBookService
             ]);
 
         if (!$updated)
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
         return [
             "response" => [

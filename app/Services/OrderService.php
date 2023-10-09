@@ -2439,4 +2439,151 @@ class OrderService
             ]
         ]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function editOrderConfirm(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [],
+            [
+                "orderId" => "required|numeric"
+            ]
+        );
+        
+        $orderId = $data["orderId"];
+
+        $sqlOrder = Order::select("shop_id", "payment_type", "payment_status")
+            ->where("order_id", $orderId);
+
+        if (!$sqlOrder->count())
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "order with id: $orderId not found"
+            ]);
+
+        $orderData = $sqlOrder
+            ->first()
+            ->toArray();
+
+        $sqlUpdate = Order::where("order_id", $orderId)
+            ->update([
+                "edit_confirm" => 1
+            ]);
+
+        if (!$sqlUpdate)
+            throw ExceptionHelper::somethingWentWrong([
+                "message" => "unable to update order with id: $orderId"
+            ]);
+
+        $sqlUpdate = OrderEdited::where("order_id", $orderId)
+            ->update([
+                "edit_confirm" => 1
+            ]);
+
+        $arrNotification["title"]   = "Approved Order ID #" . $orderId;
+        $arrNotification["body"]    = "Click to view detail";
+        $arrNotification["sound"]   = url("/notification/sound/ceoOrderReceive.mpeg");
+        $arrNotification["type"]    = "orders";
+        $arrNotification["dataId"]  = $orderId;
+        $arrNotification["dataId2"] = "";
+
+        $sqlToken = Shop::select("token_id")
+            ->where("id", $orderData['shop_id']);
+
+        $sqlTokenData = $sqlToken
+            ->first()
+            ->toArray();
+
+        CommonHelper::sendPushNotification(
+            $sqlTokenData['token_id'],
+            $arrNotification
+        );
+
+        if ($orderData['payment_type'] == 'PREPAID') {
+
+            $sqlBasic = OrderEdited::select("product_id", "total")
+                ->where("order_id", $orderId)
+                ->where("qty", "!=", 0);
+
+            if ($sqlBasic->count()) {
+
+                $tcs = 0;
+                $tds = 0;
+                $tcs = 0;
+                $tds = 0;
+                $grossAmount = 0;
+                // $paidToSeller = 0;
+                $basicAmountTotal = 0;
+                $orderAmountTotal = 0;
+                $payableMerchantAmount = 0;
+                $aggregatorCommissionAmount = 0;
+                // $totalPayoutFromNodalAccount = 0;
+
+                foreach ($sqlBasic->get()->toArray() as $sqlBasicData) {
+
+                    $orderAmountTotal = $orderAmountTotal + $sqlBasicData['total'];
+                    $sqlTaxSlab = HsnCode::select("tax_rate", "cess")
+                        ->where("hsn_code", CommonHelper::productHsn($sqlBasicData['product_id']));
+
+                    if ($sqlTaxSlab->count()) {
+
+                        $sqlTaxSlabData = $sqlTaxSlab
+                            ->first()
+                            ->toArray();
+
+                        $cessSlab = $sqlTaxSlabData['cess'];
+                        $taxSlab = $sqlTaxSlabData['tax_rate'];
+                        $basicAmount = ($sqlBasicData['total'] / (100 + $taxSlab + $cessSlab) * 100);
+                        $basicAmountTotal = $basicAmountTotal + $basicAmount;
+                    } else {
+                        $basicAmountTotal = $basicAmountTotal + $sqlBasicData['total'];
+                    }
+                }
+
+
+                if ($orderData['payment_type'] == 'PREPAID' && $orderData['payment_status'] == 1) {
+                    /*INVOICE SETTLEMENT CALCULATION STORE START*/
+
+                    // $payTmComm    = ($orderAmountTotal * 1.60) / 100;
+                    // $payTmCommGst = ($payTmComm * 18) / 100;
+                    $grossAmount  = 0.00;
+                    //$orderAmountTotal - ($payTmComm+$payTmCommGst);
+                    $tcs          = ($basicAmountTotal * 1) / 100;
+                    $tds          = ($basicAmountTotal * 1) / 100;
+                    $aggregatorCommissionAmount = $tcs + $tds;
+                    $payableMerchantAmount      = 0.00;
+                    //$grossAmount - $aggregatorCommissionAmount;
+
+                    OrderPrepaidTransaction::where("order_id", $orderId)
+                        ->update([
+                            "basic_amount" => $basicAmountTotal,
+                            "gross_amount" => $grossAmount,
+                            "aggregator_commission_amount" => $aggregatorCommissionAmount,
+                            "payable_merchant_amount" => $payableMerchantAmount,
+                            "total_payout_from_nodal_account" => $grossAmount,
+                            "tcs" => $tcs,
+                            "tds" => $tds
+                        ]);
+
+                    /*INVOICE SETTLEMENT CALCULATION STORE END*/
+                }
+            }
+        }
+
+        return [
+            "response" => [
+                "status" => true,
+                "statusCode" => StatusCodes::OK,
+                "data" => [],
+                "message" => "Order edit confirmed.",
+            ],
+            "statusCode" => StatusCodes::OK
+        ];
+
+    }
 }

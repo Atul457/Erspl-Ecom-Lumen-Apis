@@ -100,4 +100,20 @@ class ExceptionHelper extends Exception
             "message" => $errorInfo["message"] ?? "Unprocessable Entity",
         ]);
     }
+
+
+    
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @TODO Document this
+     */
+    public static function error(array $errorInfo = [])
+    {
+        return new ExceptionHelper([
+            "status" => false,
+            "data"  => $errorInfo["data"] ?? null,
+            "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again",
+            "statusCode" => $errorInfo["statusCode"] ?? StatusCodes::INTERNAL_SERVER_ERROR,
+        ]);
+    }
 }
