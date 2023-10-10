@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 09, 2023 at 09:42 PM
+-- Generation Time: Oct 10, 2023 at 10:38 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -139,6 +139,13 @@ CREATE TABLE `address_book` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `address_book`
+--
+
+INSERT INTO `address_book` (`id`, `name`, `city`, `flat`, `state`, `mobile`, `pincode`, `country`, `latitude`, `landmark`, `longitude`, `address`, `customer_id`, `default_status`, `address_type`, `created_at`, `updated_at`) VALUES
+(1, NULL, NULL, NULL, 'Delhi metro', '9776755869', NULL, NULL, NULL, NULL, NULL, NULL, 2, 1, NULL, '2023-10-10 20:00:55', '2023-10-10 20:00:55');
 
 -- --------------------------------------------------------
 
@@ -2087,7 +2094,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (44, '2023_09_18_195434_create_notification_receive_logs_table', 2),
 (45, '2023_09_30_155544_create_seller_legers_table', 2),
 (46, '2023_10_01_074014_create_refunds_table', 2),
-(47, '2023_10_03_210628_create_return_orders_table', 2);
+(47, '2023_10_03_210628_create_return_orders_table', 2),
+(48, '2023_10_10_192206_create_user_search_logs_table', 3);
 
 -- --------------------------------------------------------
 
@@ -8079,6 +8087,59 @@ INSERT INTO `tbl_seller_ledger` (`id`, `order_date`, `shop_id`, `shop_name`, `sh
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tbl_user_search_logs`
+--
+
+CREATE TABLE `tbl_user_search_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `keyword` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `datetime` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `tbl_user_search_logs`
+--
+
+INSERT INTO `tbl_user_search_logs` (`id`, `user_id`, `keyword`, `city`, `datetime`, `created_at`, `updated_at`) VALUES
+(1, 3, 'amu', NULL, '2023-04-11 18:46:02', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(2, 1, 'amul', NULL, '2023-04-11 18:46:10', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(3, 1, 'ghe', NULL, '2023-04-12 15:53:36', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(4, 1, 'ghee', NULL, '2023-04-12 15:53:36', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(5, 2, 'gheee', NULL, '2023-04-12 15:53:36', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(6, 2, 'gheee', NULL, '2023-04-12 15:53:37', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(7, 2, 'gheee a', NULL, '2023-04-12 15:53:38', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(8, 3, 'gheee am', NULL, '2023-04-12 15:53:38', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(9, 3, 'gheee amu', NULL, '2023-04-12 15:53:38', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(10, 2, 'gheee amul', NULL, '2023-04-12 15:53:38', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(11, 1, 'gheee amu', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(12, 2, 'gheee am', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(13, 3, 'gheee a', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(14, 2, 'gheee', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(15, 1, 'gheee', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(16, 3, 'ghee', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(17, 3, 'ghe', NULL, '2023-04-12 15:53:40', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(18, 1, '\'\'', NULL, '2023-04-12 15:53:41', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(19, 3, 'mil', NULL, '2023-04-12 15:53:42', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(20, 3, 'milk', NULL, '2023-04-12 15:53:42', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(21, 1, 'milk', NULL, '2023-04-12 15:53:43', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(22, 3, 'milk a', NULL, '2023-04-12 15:53:44', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(23, 1, 'milk am', NULL, '2023-04-12 15:53:45', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(24, 2, 'milk amu', NULL, '2023-04-12 15:53:45', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(25, 3, 'milk amul', NULL, '2023-04-12 15:53:45', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(26, 3, 'milk amu', NULL, '2023-04-12 15:53:46', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(27, 1, 'milk am', NULL, '2023-04-12 15:53:47', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(28, 1, 'milk a', NULL, '2023-04-12 15:53:47', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(29, 1, 'milk', NULL, '2023-04-12 15:53:47', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(30, 2, 'milk', NULL, '2023-04-12 15:53:47', '2023-10-10 19:30:55', '2023-10-10 19:30:55'),
+(31, 2, 'amu', NULL, '2023-10-10 20:01:24', '2023-10-10 20:01:24', '2023-10-10 20:01:24');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `uom_type`
 --
 
@@ -8461,6 +8522,13 @@ ALTER TABLE `tbl_seller_ledger`
   ADD KEY `tbl_seller_ledger_shop_city_id_foreign` (`shop_city_id`);
 
 --
+-- Indexes for table `tbl_user_search_logs`
+--
+ALTER TABLE `tbl_user_search_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tbl_user_search_logs_user_id_foreign` (`user_id`);
+
+--
 -- Indexes for table `uom_type`
 --
 ALTER TABLE `uom_type`
@@ -8495,7 +8563,7 @@ ALTER TABLE `acategory`
 -- AUTO_INCREMENT for table `address_book`
 --
 ALTER TABLE `address_book`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `brand`
@@ -8543,7 +8611,7 @@ ALTER TABLE `industries`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `notification`
@@ -8688,6 +8756,12 @@ ALTER TABLE `tbl_return_order`
 --
 ALTER TABLE `tbl_seller_ledger`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1068;
+
+--
+-- AUTO_INCREMENT for table `tbl_user_search_logs`
+--
+ALTER TABLE `tbl_user_search_logs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `uom_type`
@@ -8867,6 +8941,12 @@ ALTER TABLE `tbl_return_order`
 ALTER TABLE `tbl_seller_ledger`
   ADD CONSTRAINT `tbl_seller_ledger_shop_city_id_foreign` FOREIGN KEY (`shop_city_id`) REFERENCES `city` (`id`),
   ADD CONSTRAINT `tbl_seller_ledger_shop_id_foreign` FOREIGN KEY (`shop_id`) REFERENCES `shop` (`id`);
+
+--
+-- Constraints for table `tbl_user_search_logs`
+--
+ALTER TABLE `tbl_user_search_logs`
+  ADD CONSTRAINT `tbl_user_search_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `tbl_registration` (`id`);
 
 --
 -- Constraints for table `wallet`

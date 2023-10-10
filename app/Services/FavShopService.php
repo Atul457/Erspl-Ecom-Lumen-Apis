@@ -3,15 +3,9 @@
 namespace App\Services;
 
 use App\Constants\StatusCodes;
-use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
-use App\Models\Cart;
 use App\Models\FavShop;
-use App\Models\OfferPriceBundling;
-use App\Models\Product;
-use App\Models\SubCategory;
-use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

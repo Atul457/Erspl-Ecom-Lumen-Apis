@@ -64,7 +64,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // Slider
         $router->post('/sliderList', 'SliderController@sliderList');
         
+        // Home
+        $router->post('/searchHome', 'HomeController@searchHome');
+        $router->post('/searchList', 'HomeController@searchList');
+        
         // Product
+        $router->post('/productDetail', 'ProductController@productDetail');
         $router->post('/searchShopProduct', 'ProductController@searchShopProduct');
         
         // List

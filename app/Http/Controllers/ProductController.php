@@ -41,4 +41,16 @@ class ProductController extends Controller
         $res = $this->service->searchShopProduct($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function productDetail(Request $req)
+    {
+        $res = $this->service->productDetail($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }
