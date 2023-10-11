@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\UtilityHelper;
 use App\Models\Cart;
 use App\Models\OfferBundling;
 use App\Models\OfferPriceBundling;
@@ -562,5 +563,158 @@ class ProductService
                 "message" => "Product Detail Not Found."
             ]);
         }
+    }
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function similarProductList(Request $req)
+    {
+        $similarProductList = array();
+
+        $userId = $req->user()->id;
+        $currentTime = date('H:i:s');
+
+        $sqlCart = Cart::select("shop_id")
+            ->where("user_id", $userId)
+            ->groupBy("shop_id")
+            ->get()
+            ->toArray();
+
+        foreach ($sqlCart as $sqlCartData) {
+
+            $shopId = $sqlCartData['shop_id'];
+
+            $sqlShop = Shop::select("*")
+                ->where("id", $shopId);
+
+            $sqlShopData = $sqlShop
+                ->first()
+                ?->toArray();
+
+            if (!$sqlShopData)
+                throw ExceptionHelper::error([
+                    "message" => "shop row not found where id: $shopId"
+                ]);
+
+            if ($sqlShopData['store_status'] == 1) {
+                $storeStatus = 1;
+                if ($sqlShopData['time_to'] < $currentTime) {
+                    $storeStatus = 0;
+                }
+            }
+
+            if ($sqlShopData['store_status'] == 2) {
+                $storeStatus = 0;
+            }
+
+            $sqlProduct = Product::select("*")
+                ->where([
+                    "shop_id" => $shopId,
+                    "status" => 1
+                ])
+                ->limit(10);
+
+            $count = $sqlProduct->count();
+
+            if ($count > 0) {
+
+                $similarProductList = array();
+
+                $sqlProduct = $sqlProduct
+                    ->get()
+                    ->toArray();
+
+                foreach ($sqlProduct as $sqlProductData) {
+
+                    $productImage = "";
+                    $directory = '../products/' . $sqlProductData['barcode'] . '/';
+                    $partialName = '1';
+
+                    $files = glob($directory . '*' . $partialName . '*');
+
+                    if ($files !== false) {
+                        foreach ($files as $file) {
+                            $productImage = basename($file);
+                        }
+                    } else {
+                        $productImage = "";
+                    }
+
+                    $unitList = array();
+
+                    if ($sqlProductData['price'] == 0) {
+                        $price = $sqlProductData['sellingprice'];
+                    } else {
+                        $price = $sqlProductData['price'];
+                    }
+
+                    $f  = $sqlProductData['sellingprice'];
+                    $g  = $price;
+                    $h  = $f - $g;
+                    $i  = $f / 100;
+                    $j1 = $h / $i;
+
+                    $roundOffDiscount1 = explode('.', number_format($j1, 2));
+
+                    $j = $roundOffDiscount1[0];
+
+                    $discount = "";
+                    if ($j > 0) {
+                        $discount = round($j) . " % OFF";
+                    }
+
+                    array_push($unitList, array(
+                        'variantId' => $sqlProductData['id'],
+                        'weight' => $sqlProductData['weight'] . " " . CommonHelper::uomName($sqlProductData['unit_id']),
+                        "price" => $price,
+                        "sellingPrice" => $sqlProductData['sellingprice'],
+                        "stock" => "",
+                        "discount" => $discount
+                    ));
+
+                    $similarProductList[] = array(
+                        "productId" => $sqlProductData['id'],
+                        "shopId" => $sqlProductData['shop_id'],
+                        "shopName" => $sqlShopData['name'],
+                        "status" => $storeStatus,
+                        "max_qty" => $sqlShopData['max_qty'],
+                        "productName" =>   ucwords(
+                            ucfirst(
+                                strtolower(
+                                    mb_convert_encoding($sqlProductData["name"], 'UTF-8')
+                                )
+                            )
+                        ),
+                        "small_description" => $sqlProductData['small_description'],
+                        "productImage" => url("/products") . "/" . $sqlProductData['barcode'] . '/' . $productImage,
+                        "unit" => $unitList
+                    );
+                }
+
+                return [
+                    "response" => [
+                        "status" => true,
+                        "statusCode" => StatusCodes::OK,
+                        "data" => [
+                            "similarProductList" => $similarProductList
+                        ],
+                        "message" => null,
+                    ],
+                    "statusCode" => StatusCodes::OK
+                ];
+            } else {
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
+                    "message" => "There are no Products in this store."
+                ]);
+            }
+        }
+
+        throw ExceptionHelper::error([
+            "message" => "Bypassed all cases."
+        ]);
     }
 }

@@ -42,4 +42,16 @@ class FavShopController extends Controller
         $res = $this->service->removeFav($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function favShopList(Request $req)
+    {
+        $res = $this->service->favShopList($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

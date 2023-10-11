@@ -605,4 +605,54 @@ class ShopService
             "statusCode" => StatusCodes::OK
         ];
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function searchProductList(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'shopId.exists' => 'Product List Not Found.'
+            ],
+            [
+                "shopId" => "required|exists:product,shop_id",
+            ]
+        );
+
+        $shopId = $data['shopId'];
+
+        $sqlProduct = Product::select("*")
+            ->where([
+                "shop_id" => $shopId,
+                "status" => 1
+            ])
+            ->get()
+            ->toArray();
+
+        $productlist = array();
+
+        foreach ($sqlProduct as $sqlProductData) {
+            $productlist[] = array(
+                "productId" => $sqlProductData['id'],
+                "productName" => mb_convert_encoding($sqlProductData['name'], 'UTF-8')
+            );
+        }
+
+        return [
+            "response" => [
+                "status" => true,
+                "statusCode" => StatusCodes::OK,
+                "data" => [
+                    "categorylist" => $productlist
+                ],
+                "message" => null,
+            ],
+            "statusCode" => StatusCodes::OK
+        ];
+    }
 }

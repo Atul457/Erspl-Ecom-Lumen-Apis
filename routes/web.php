@@ -40,65 +40,74 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // Wallet
         $router->post('/rechargeWallet', 'WalletController@rechargeWallet');
         $router->post('/checkWalletBalance', 'WalletController@checkWalletBalance');
-        
+
         // Category
         $router->post('/categoryList', 'ACategoryController@categoryList');
         $router->post('/searchCategoryList', 'ACategoryController@searchCategoryList');
         $router->post('/subCategoryList', 'ProductController@subCategoryList');
-        
+
         // Notification
         $router->post('/notificationList', 'NotificationController@notificationList');
-        
+
         // Referral
         $router->post('/referralList', 'WalletController@referralList');
-        
+
         // Shop
         $router->post('/shopList', 'ShopController@shopList');
-        $router->post('/addRating', 'RatingController@addRating'); 
+        $router->post('/addRating', 'RatingController@addRating');
         $router->post('/shopDetail', 'ShopController@shopDetail');
         $router->post('/removeFav', 'FavShopController@removeFav');
         $router->post('/addFavShop', 'FavShopController@addFavShop');
+        $router->post('/favShopList', 'FavShopController@favShopList');
         $router->post('/nearestShopList', 'ShopController@nearestShopList');
         $router->post('/searchShopDetail', 'ShopController@searchShopDetail');
-        
+        $router->post('/searchProductList', 'ShopController@searchProductList'); // To confirm
+
         // Slider
         $router->post('/sliderList', 'SliderController@sliderList');
-        
+
         // Home
         $router->post('/searchHome', 'HomeController@searchHome');
         $router->post('/searchList', 'HomeController@searchList');
-        
+
         // Product
         $router->post('/productDetail', 'ProductController@productDetail');
         $router->post('/searchShopProduct', 'ProductController@searchShopProduct');
-        
+        $router->post('/similarProductList', 'ProductController@similarProductList');
+
         // List
-        $router->post('/reasonList', 'CancelReasonController@reasonList'); 
-        
+        $router->post('/reasonList', 'CancelReasonController@reasonList');
+
         // Wishlist
-        $router->post('/wishlist', 'WishlistController@wishlist'); 
-        $router->post('/addWishlist', 'WishlistController@addWishlist'); 
-        $router->post('/removeWishlist', 'WishlistController@removeWishlist'); 
-        
+        $router->post('/wishlist', 'WishlistController@wishlist');
+        $router->post('/addWishlist', 'WishlistController@addWishlist');
+        $router->post('/removeWishlist', 'WishlistController@removeWishlist');
+
         // Cart
-        $router->post('/addCart', 'CartController@addCart'); 
-        $router->post('/cartList', 'CartController@cartList'); 
-        $router->post('/removeCart', 'CartController@removeCart'); 
-        $router->post('/repeatCart', 'CartController@repeatCart'); 
-        $router->post('/updateCart', 'CartController@updateCart'); 
-        $router->post('/wishToCart', 'CartController@wishToCart'); 
-        
+        $router->post('/addCart', 'CartController@addCart');
+        $router->post('/cartList', 'CartController@cartList');
+        $router->post('/removeCart', 'CartController@removeCart');
+        $router->post('/repeatCart', 'CartController@repeatCart');
+        $router->post('/updateCart', 'CartController@updateCart');
+        $router->post('/wishToCart', 'CartController@wishToCart');
+
         // Order
-        $router->post('/saveOrder', 'OrderController@saveOrder'); 
-        $router->post('/orderList', 'OrderController@orderList'); 
-        $router->post('/orderStage', 'OrderController@orderStage'); 
-        $router->post('/orderReturn', 'OrderController@orderReturn'); 
-        $router->post('/orderCancel', 'OrderController@orderCancel'); 
-        $router->post('/getOrderStatus', 'OrderController@getOrderStatus'); 
-        $router->post('/editOrderConfirm', 'OrderController@editOrderConfirm'); 
-        $router->post('/orderReferenceList', 'OrderController@orderReferenceList'); 
-        $router->post('/orderCompleteCancel', 'OrderController@orderCompleteCancel'); 
-        $router->post('/orderReturnAcceptPartner', 'OrderController@orderReturnAcceptPartner'); 
+        $router->post('/saveOrder', 'OrderController@saveOrder');
+        $router->post('/orderList', 'OrderController@orderList');
+        $router->post('/orderStage', 'OrderController@orderStage');
+        $router->post('/orderReturn', 'OrderController@orderReturn');
+        $router->post('/orderCancel', 'OrderController@orderCancel');
+        $router->post('/getOrderStatus', 'OrderController@getOrderStatus');
+        $router->post('/editOrderConfirm', 'OrderController@editOrderConfirm');
+        $router->post('/orderReferenceList', 'OrderController@orderReferenceList');
+        $router->post('/orderCompleteCancel', 'OrderController@orderCompleteCancel');
+        $router->post('/orderReturnAcceptPartner', 'OrderController@orderReturnAcceptPartner');
+
+        // Paytm
+        $router->post('/paytm-config', 'PaytmController@paytmConfig');
+
+        // Coupon
+        $router->post('/applyCoupon', 'CouponController@applyCoupon');
 
     });
 
@@ -115,5 +124,4 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('/checkRegOtp', 'RegistrationTempController@checkRegOtp');
     $router->post('/signupAccount', 'RegistrationTempController@signupAccount');
     $router->post('/updateToken', 'RegistrationController@updateToken');
-    
 });
