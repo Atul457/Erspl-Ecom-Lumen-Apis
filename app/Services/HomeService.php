@@ -17,7 +17,7 @@ use App\Models\Shop;
 use App\Models\ShopTime;
 use App\Models\UserSearchLog;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -404,6 +404,48 @@ class HomeService
     /**
      * @todo Document this
      */
+    public static function factorial($name, $shopIds)
+    {
+        $nameData = explode(" ", $name);
+        $altQuery = "";
+        $altQuerySingle = "";
+
+        if (count($nameData) > 0) {
+            foreach ($nameData as $nD) {
+                $altQuery .= "%" . $nD;
+            }
+            $altQuerySingle = "'" . $altQuery . "%'";
+            $altQuery =  "'" . $altQuery . ",%'";
+        }
+
+
+        $sqlProduct1 = Product::select('id', 'name', 'barcode', 'shop_id', 'image', 'weight', 'unit_id', 'price', 'sellingprice')
+            ->whereIn('shop_id', $shopIds)
+            ->where('name', 'like', $altQuerySingle)
+            ->where('status', 1)
+            ->groupBy('unique_code')
+            ->orderBy('name');
+
+        // Base case: If $n is 0 or 1, return 1
+        if ($sqlProduct1->count() > 0) {
+            return $sqlProduct1
+                ->get()
+                ->toArray();
+        } else {
+            // Recursive case: Call the factorial function with a smaller argument
+            if (strlen($name) >= 3) {
+                $name1 = substr($name, 0, -1);
+                return HomeService::factorial($name1, $shopIds);
+            }
+        }
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
     public static function searchList(Request $req)
     {
 
@@ -420,210 +462,360 @@ class HomeService
         $date = date('Y-m-d H:i:s');
         $userId = $req->user()->id;
 
-        $sqlHome = Home::select("shop_range")->first();
-        $sqlHomeData = $sqlHome
-            ->toArray();
+        $nameData       = explode(" ", $name);
+        $altQuery       = "";
+        $altQuerySingle = "";
 
-        $sqlUserCity = AddressBook::select('city', 'latitude', 'longitude')
-            ->where([
-                "customer_id" => $userId,
-                "default_status" => 1
-            ]);
+        if (count($nameData) > 0) {
 
-        $userCityData = $sqlUserCity
-            ->first()
-            ?->toArray();
-
-        if (!$userCityData)
-            throw ExceptionHelper::error([
-                "message" => "addressbook row not found with customer_id: $userId and default_status:1"
-            ]);
-
-        /* search logs*/
-        if (!empty($name) && strlen($name) > 2) {
-            UserSearchLog::insert([
-                "user_id" => $userId,
-                "keyword" => $name,
-                "city" => $userCityData['city'],
-                "datetime" => $date
-            ]);
-        }
-        /* search logs*/
-
-        /* active shop ids */
-        $shopIds = array();
-
-        $sqlActiveShop = Shop::select("id", "latitude", "longitude")
-            ->where([
-                "status" => 1,
-                "store_status" => 1
-            ])
-            ->get()
-            ->toArray();
-
-        foreach ($sqlActiveShop as $activeShopData) {
-            $distance = UtilityHelper::getDistanceBetweenPlaces(
-                [
-                    "lat" => $userCityData["latitude"],
-                    "long" => $userCityData["longitude"],
-                ],
-                [
-                    "lat" => $activeShopData['latitude'],
-                    "long" => $activeShopData['longitude']
-                ]
-            );
-
-            if ($distance <= $sqlHomeData['shop_range']) {
-                $shopIds[] = ($activeShopData['id']);
+            foreach ($nameData as $nD) {
+                $altQuery .= "%" . $nD;
             }
+
+            $altQuerySingle = "'" . $altQuery . "%'";
+            $altQuery =  "'" . $altQuery . ",%'";
         }
 
-        $shopIds = implode(",", $shopIds);
+        if (strlen($name) > 2 && $name != "\'\'") {
 
-        /* active shop ids */
+            $sqlHome = Home::select("shop_range")->first();
+            $sqlHomeData = $sqlHome
+                ->toArray();
 
-        if (strlen($shopIds) > 0) {
+            $sqlUserCity = AddressBook::select('city', 'latitude', 'longitude')
+                ->where([
+                    "customer_id" => $userId,
+                    "default_status" => 1
+                ]);
 
-            $sqlProduct = Product::select('id', 'name', 'barcode', 'shop_id', 'image', 'weight', 'unit_id', 'price', 'sellingprice')
-                ->whereIn('shop_id', $shopIds)
-                ->where(function ($query) use ($name) {
-                    $query->where('keywords', 'LIKE', '%' . $name . ' %')
-                        ->orWhere('keywords', 'LIKE', '% ' . $name . '%')
-                        ->orWhere('keywords', 'LIKE', '%,' . $name . ',%')
-                        ->orWhere('keywords', 'LIKE', '%' . $name . ',%')
-                        ->orWhere('keywords', 'LIKE', '%,' . $name . '%');
-                })
-                ->where('status', 1)
-                ->groupBy('unique_code')
-                ->orderBy('name');
+            $userCityData = $sqlUserCity
+                ->first()
+                ?->toArray();
 
-            UtilityHelper::enableSqlStrictMode();
+            if (!$userCityData)
+                throw ExceptionHelper::error([
+                    "message" => "addressbook row not found with customer_id: $userId and default_status:1"
+                ]);
 
-            $count = $sqlProduct->count();
+            /* search logs*/
+            if (!empty($name) && strlen($name) > 2) {
+                UserSearchLog::insert([
+                    "user_id" => $userId,
+                    "keyword" => $name,
+                    "city" => $userCityData['city'],
+                    "datetime" => $date
+                ]);
+            }
+            /* search logs*/
 
-            UtilityHelper::disableSqlStrictMode();
+            /* active shop ids */
+            $shopIds = array();
 
-            if ($count > 0) {
+            $sqlActiveShop = Shop::select("id", "latitude", "longitude")
+                ->where([
+                    "status" => 1,
+                    "store_status" => 1
+                ])
+                ->get()
+                ->toArray();
 
-                $loop = 0;
-                $productlist = array();
+            foreach ($sqlActiveShop as $activeShopData) {
+                $distance = UtilityHelper::getDistanceBetweenPlaces(
+                    [
+                        "lat" => $userCityData["latitude"],
+                        "long" => $userCityData["longitude"],
+                    ],
+                    [
+                        "lat" => $activeShopData['latitude'],
+                        "long" => $activeShopData['longitude']
+                    ]
+                );
+
+                if ($distance <= $sqlHomeData['shop_range']) {
+                    $shopIds[] = ($activeShopData['id']);
+                }
+            }
+
+            $shopIds = implode(",", $shopIds);
+
+            /* active shop ids */
+
+            if (strlen($shopIds) > 0) {
+
+                $sqlProduct =  Product::select('id', 'name', 'barcode', 'shop_id', 'image', 'weight', 'unit_id', 'price', 'sellingprice')
+                    ->whereIn('shop_id', $shopIds)
+                    ->where('keywords', 'like', $altQuery)
+                    ->where('status', 1)
+                    ->groupBy('unique_code')
+                    ->orderBy('name');
 
                 UtilityHelper::enableSqlStrictMode();
 
-                $sqlProduct = $sqlProduct
-                    ->get()
-                    ->toArray();
+                $count = $sqlProduct->count();
 
                 UtilityHelper::disableSqlStrictMode();
 
-                foreach ($sqlProduct as $sqlProductData) {
+                if ($count > 0) {
 
-                    $productImage = "";
-                    $directory = '../products/' . $sqlProductData['barcode'] . '/';
-                    $partialName = '1.';
-                    $files = glob($directory . '*' . $partialName . '*');
-                    if ($files !== false) {
-                        foreach ($files as $file) {
-                            $productImage = basename($file);
-                        }
-                    } else {
+                    $loop = 0;
+                    $productlist = array();
+
+                    UtilityHelper::enableSqlStrictMode();
+
+                    $sqlProduct = $sqlProduct
+                        ->get()
+                        ->toArray();
+
+                    UtilityHelper::disableSqlStrictMode();
+
+                    foreach ($sqlProduct as $sqlProductData) {
+
                         $productImage = "";
-                    }
+                        $directory = '../products/' . $sqlProductData['barcode'] . '/';
+                        $partialName = '1.';
+                        $files = glob($directory . '*' . $partialName . '*');
+                        if ($files !== false) {
+                            foreach ($files as $file) {
+                                $productImage = basename($file);
+                            }
+                        } else {
+                            $productImage = "";
+                        }
 
-                    $unitList = array();
+                        $unitList = array();
 
-                    $sqlCart = Cart::where('shop_id', $sqlProductData['shop_id'])
-                        ->where('user_id', $userId)
-                        ->where('product_id', $sqlProductData['id']);
+                        $sqlCart = Cart::where('shop_id', $sqlProductData['shop_id'])
+                            ->where('user_id', $userId)
+                            ->where('product_id', $sqlProductData['id']);
 
-                    if ($sqlCart->count() == 0) {
-                        $added  = 0;
-                    } else {
-                        $added  = 1;
-                    }
+                        if ($sqlCart->count() == 0) {
+                            $added  = 0;
+                        } else {
+                            $added  = 1;
+                        }
 
-                    if ($sqlProductData['price'] == 0) {
-                        $price = $sqlProductData['sellingprice'];
-                    } else {
-                        $price = $sqlProductData['price'];
-                    }
+                        // Added
 
-                    $f = $sqlProductData['sellingprice'];
-                    $g = $price;
-                    $h = $f - $g;
-                    $i = $f / 100;
-                    $j1 = $h / $i;
-                    $roundOffDiscount1 = explode('.', number_format($j1, 2));
-                    $j = $roundOffDiscount1[0];
-                    $discount = "";
+                        if ($sqlProductData['price'] == 0) {
+                            $price = $sqlProductData['sellingprice'];
+                        } else {
+                            $price = $sqlProductData['price'];
+                        }
 
-                    if ($j > 0) {
-                        $discount = round($j) . "% OFF";
-                    }
+                        $f  = $sqlProductData['sellingprice'];
+                        $g  = $price;
+                        $h  = $f - $g;
+                        $i  = $f / 100;
+                        $j1 = $h / $i;
+                        $roundOffDiscount1 = explode('.', number_format($j1, 2));
+                        $j = $roundOffDiscount1[0];
+                        $discount = "";
 
-                    array_push(
-                        $unitList,
-                        array(
-                            'variantId' => $sqlProductData['id'],
-                            'weight' => $sqlProductData['weight'] . " " . CommonHelper::uomName($sqlProductData['unit_id']),
-                            "price" => round($price),
-                            "sellingPrice" => round($sqlProductData['sellingprice']),
-                            "discount" => $discount
-                        )
-                    );
+                        if ($j > 0) {
+                            $discount = round($j) . "% OFF";
+                        }
 
-                    $productlist[] = array(
-                        "added" => $added,
-                        "productId" => $sqlProductData['id'],
-                        "shopId" => $sqlProductData['shop_id'],
-                        "shopName" => CommonHelper::shopName($sqlProductData['shop_id']),
-                        "productName" =>  ucwords(
-                            ucfirst(
-                                strtolower(
-                                    mb_convert_encoding(
-                                        $sqlProductData['name'],
-                                        'UTF-8'
+                        array_push(
+                            $unitList,
+                            array(
+                                'variantId' => $sqlProductData['id'],
+                                'weight' => $sqlProductData['weight'] . " " . CommonHelper::uomName($sqlProductData['unit_id']),
+                                "price" => round($price),
+                                "sellingPrice" => round($sqlProductData['sellingprice']),
+                                "discount" => $discount
+                            )
+                        );
+
+                        $productlist[] = array(
+                            "added" => $added,
+                            "productId" => $sqlProductData['id'],
+                            "shopId" => $sqlProductData['shop_id'],
+                            "shopName" => CommonHelper::shopName($sqlProductData['shop_id']),
+                            "productName" => ucwords(
+                                ucfirst(
+                                    strtolower(
+                                        mb_convert_encoding(
+                                            $sqlProductData['name'],
+                                            'UTF-8'
+                                        )
                                     )
                                 )
-                            )
-                        ),
-                        "barcode" => $sqlProductData['barcode'],
-                        "productImage" => url("/products") . "/" . $sqlProductData['barcode'] . '/' . $productImage,
-                        "unit" => $unitList
-                    );
+                            ),
+                            "barcode" => $sqlProductData['barcode'],
+                            "productImage" => url("/products") . "/" . $sqlProductData['barcode'] . '/' . $productImage,
+                            "unit" => $unitList
+                        );
 
-                    $loop++;
-                }
+                        $loop++;
+                    }
 
-                if ($loop > 0) {
-                    return [
-                        "response" => [
-                            "status" => true,
-                            "statusCode" => StatusCodes::OK,
-                            "data" => [
-                                "productList" =>  $productlist
+                    if ($loop > 0) {
+
+                        return [
+                            "response" => [
+                                "status" => true,
+                                "statusCode" => StatusCodes::OK,
+                                "data" => [
+                                    "count" => $count . " Product(s) Found",
+                                    "productList" => $productlist
+                                ],
+                                "message" => null,
                             ],
-                            "message" => "Product(s) Found",
-                        ],
-                        "statusCode" => StatusCodes::OK
-                    ];
+                            "statusCode" => StatusCodes::OK
+                        ];
+                    } else {
+                        throw ExceptionHelper::error([
+                            "statusCode" => StatusCodes::NOT_FOUND,
+                            "message" => "No Products"
+                        ]);
+                    }
                 } else {
-                    throw ExceptionHelper::error([
-                        "statusCode" => StatusCodes::NOT_FOUND,
-                        "message" => "No Products"
-                    ]);
+
+                    $sqlProduct = Product::select('id', 'name', 'barcode', 'shop_id', 'image', 'weight', 'unit_id', 'price', 'sellingprice')
+                        ->whereIn('shop_id', $shopIds)
+                        ->where('name', 'like', $altQuerySingle)
+                        ->where('status', 1)
+                        ->groupBy('unique_code')
+                        ->orderBy('name');
+
+                    $count = $sqlProduct->count();
+
+                    if ($count == 0) {
+
+                        // Example usage
+                        $name = substr($name, 0, -1);
+
+                        if (strlen($name) >= 3) {
+                            $sqlProduct = HomeService::factorial($name, $shopIds); // Calculates 5!
+                            $count      = mysqli_num_rows($sqlProduct);
+                            //$count = 1;
+                        }
+                    }
+
+                    if ($count > 0) {
+
+                        $loop = 0;
+                        $productlist = array();
+
+                        $sqlProduct = $sqlProduct
+                            ->get()
+                            ->toArray();
+
+                        foreach ($sqlProduct as $sqlProductData) {
+
+                            $productImage = "";
+                            $directory = '../products/' . $sqlProductData['barcode'] . '/';
+                            $partialName = '1.';
+                            $files = glob($directory . '*' . $partialName . '*');
+
+                            if ($files !== false) {
+                                foreach ($files as $file) {
+                                    $productImage = basename($file);
+                                }
+                            } else {
+                                $productImage = "";
+                            }
+
+                            $unitList = array();
+
+                            $sqlCart = Cart::where('shop_id', $sqlProductData['shop_id'])
+                                ->where('user_id', $userId)
+                                ->where('product_id', $sqlProductData['id'])
+                                ->count();
+
+                            $added = ($sqlCart == 0) ? 0 : 1;
+
+                            if ($sqlProductData['price'] == 0) {
+                                $price = $sqlProductData['sellingprice'];
+                            } else {
+                                $price = $sqlProductData['price'];
+                            }
+
+                            $f  = $sqlProductData['sellingprice'];
+                            $g  = $price;
+                            $h  = $f - $g;
+                            $i  = $f / 100;
+                            $j1 = $h / $i;
+                            $roundOffDiscount1 = explode('.', number_format($j1, 2));
+                            $j = $roundOffDiscount1[0];
+                            $discount = "";
+
+                            if ($j > 0) {
+                                $discount = round($j) . "% OFF";
+                            }
+
+                            array_push(
+                                $unitList,
+                                array(
+                                    'variantId' => $sqlProductData['id'],
+                                    'weight' => $sqlProductData['weight'] . " " . CommonHelper::uomName($sqlProductData['unit_id']),
+                                    "price" => round($price),
+                                    "sellingPrice" => round($sqlProductData['sellingprice']),
+                                    "discount" => $discount
+                                )
+                            );
+
+                            $productlist[] = array(
+                                "added" => $added,
+                                "productId" => $sqlProductData['id'],
+                                "shopId" => $sqlProductData['shop_id'],
+                                "shopName" => CommonHelper::shopName($sqlProductData['shop_id']),
+                                "productName" => ucwords(
+                                    ucfirst(
+                                        strtolower(
+                                            mb_convert_encoding(
+                                                $sqlProductData['name'],
+                                                'UTF-8'
+                                            )
+                                        )
+                                    )
+                                ),
+                                "barcode" => $sqlProductData['barcode'],
+                                "productImage" => url("/products") . "/" . $sqlProductData['barcode'] . '/' . $productImage,
+                                "unit" => $unitList
+                            );
+
+                            $loop++;
+
+                            if ($loop > 0) {
+
+                                return [
+                                    "response" => [
+                                        "status" => true,
+                                        "statusCode" => StatusCodes::OK,
+                                        "data" => [
+                                            "count" => $count . " Product(s) Found",
+                                            "productList" => $productlist
+                                        ],
+                                        "message" => null,
+                                    ],
+                                    "statusCode" => StatusCodes::OK
+                                ];
+                            } else {
+                                throw ExceptionHelper::error([
+                                    "statusCode" => StatusCodes::NOT_FOUND,
+                                    "message" => "No Products"
+                                ]);
+                            }
+                        }
+                    } else {
+                        throw ExceptionHelper::error([
+                            "statusCode" => StatusCodes::NOT_FOUND,
+                            "message" => "Product Not Found."
+                        ]);
+                    }
                 }
             } else {
                 throw ExceptionHelper::error([
                     "statusCode" => StatusCodes::NOT_FOUND,
-                    "message" => "Product Not Found."
+                    "message" => "There are no Seller in Your Area"
                 ]);
             }
+        } else {
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
+                "message" => "Please Enter Atleast 3 Character"
+            ]);
         }
-
-        throw ExceptionHelper::error([
-            "statusCode" => StatusCodes::NOT_FOUND,
-            "message" => "There are no Seller in Your Area"
-        ]);
     }
 }

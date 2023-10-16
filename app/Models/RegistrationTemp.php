@@ -24,6 +24,7 @@ class RegistrationTemp extends Model
         'gender',
         'mobile',
         'status',
+        'referral_status',
         'attempt',
         'password',
         'reg_type',

@@ -6,9 +6,10 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Models\Registration;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -159,5 +160,164 @@ class WalletService
             ],
             "statusCode" => StatusCodes::OK
         ];
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function walletHistory(Request $req)
+    {
+        $userId = $req->user()->id;
+        $sqlWallet = Wallet::select("*")
+            ->where("customer_id", $userId)
+            ->orderBy("date", "desc");
+
+        $count = $sqlWallet
+            ->count();
+
+        if ($count > 0) {
+
+            $balance = 0;
+
+            $sqlReg = Registration::select("wallet_balance")
+                ->where("id", $userId);
+
+            $regData = $sqlReg
+                ->first()
+                ->toArray();
+
+            if (!empty($regData['wallet_balance'])) {
+                $balance = $regData['wallet_balance'];
+            }
+
+            $sqlWallet = $sqlWallet
+                ->get()
+                ->toArray();
+
+            foreach ($sqlWallet as $walletData) {
+
+                $walletList[] = array(
+                    'Id' => $walletData['id'],
+                    "date" => $walletData['date'],
+                    "amount" => $walletData['amount'],
+                    "remark" => $walletData['remark'],
+                    "paymentStatus" => $walletData['payment_status'],
+                    "status" => $walletData['status']
+                );
+            }
+
+            return [
+                "response" => [
+                    "status" => true,
+                    "statusCode" => StatusCodes::OK,
+                    "data" => [
+                        "walletList" => $walletList,
+                        "walletBalance" => round($balance)
+                    ],
+                    "message" => null,
+                ],
+                "statusCode" => StatusCodes::OK
+            ];
+        } else {
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
+                "message" => "No Transaction Found"
+            ]);
+        }
+    }
+
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function walletPaymentTest(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [
+                'numeric' => ':attribute must be be a number'
+            ],
+            [
+                "orderId" => "numeric"
+            ]
+        );
+
+        $userId      = $req->user()->id;
+        $orderId     = $data['orderId'] ?? "";
+        $txnId       = CommonHelper::generateTXN();
+        $txnDate     = date('Y-m-d H:i:s');
+        $txnStatus   = $data['txnStatus'] ?? "";
+        $paymentMode = "Paytm";
+
+        $sqlWallet = Wallet::select("amount", "status")
+            ->where("invoice_id", $orderId);
+
+        $walletData = $sqlWallet
+            ->first()
+            ?->toArray();
+
+        if (($walletData['status'] ?? "") == 0) {
+
+            if ($txnStatus == 'TXN_SUCCESS') {
+                $paymentStatus = 1;
+                $msg = 'Recharged Successfully';
+            } else {
+                $paymentStatus = 2;
+                $msg = 'Payment Failed';
+            }
+
+            $sqlUpdate = Wallet::where("invoice_id", $orderId)
+                ->update([
+                    "status" => $paymentStatus,
+                    "txn_id" => $txnId,
+                    "txn_date" => $txnDate,
+                    "payment_mode" => $paymentMode
+                ]);
+
+            if ($sqlUpdate) {
+
+                if ($paymentStatus == 1) {
+
+                    $sqlReg = Registration::select("wallet_balance")
+                        ->where("id", $userId);
+
+                    $regData = $sqlReg
+                        ->first()
+                        ->toArray();
+
+                    $updateBalance = $regData['wallet_balance'] + $walletData['amount'];
+
+                    Registration::where("id", $userId)
+                        ->update([
+                            "wallet_balance" => $updateBalance
+                        ]);
+                }
+
+                return [
+                    "response" => [
+                        "status" => true,
+                        "statusCode" => StatusCodes::OK,
+                        "data" => [],
+                        "message" => $msg,
+                    ],
+                    "statusCode" => StatusCodes::OK
+                ];
+            } else {
+                throw ExceptionHelper::error([
+                    "message" => "Unable to update wallet row where invoid_id: $orderId"
+                ]);
+            }
+        } else {
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
+                "message" => "Already Done"
+            ]);
+        }
     }
 }

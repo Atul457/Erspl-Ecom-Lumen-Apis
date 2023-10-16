@@ -78,4 +78,28 @@ class ShopController extends Controller
         $res = $this->service->searchProductList($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function checkDistance(Request $req)
+    {
+        $res = $this->service->checkDistance($req);
+        return response($res["response"], $res["statusCode"]);
+    }
+
+    
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function shopReviewList(Request $req)
+    {
+        $res = $this->service->shopReviewList($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

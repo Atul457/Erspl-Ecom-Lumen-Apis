@@ -142,5 +142,17 @@ class OrderController extends Controller
         $res = $this->service->editOrderConfirm($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function paymentStatus(Request $req)
+    {
+        $res = $this->service->paymentStatus($req);
+        return response($res["response"], $res["statusCode"]);
+    }
     
 }

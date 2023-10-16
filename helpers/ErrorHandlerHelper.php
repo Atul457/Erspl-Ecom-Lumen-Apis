@@ -5,9 +5,10 @@ namespace App\Helpers;
 
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
 use Throwable;
 
 /**
@@ -31,7 +32,7 @@ class ErrorHandlerHelper
     /**
      * @info TODO Document this
      */
-    public function __construct(Request $req, Throwable $e)
+    public function __construct($req, Throwable $e)
     {
         $this->payload = $req->input();
         $this->handleThrowableError($e);
@@ -56,7 +57,7 @@ class ErrorHandlerHelper
         if ($this->statusCode === StatusCodes::INTERNAL_SERVER_ERROR)
             $this->message = "something went wrong";
 
-        Log::error("\nFunction name: $this->functionName\nFile name: $this->fileName\nLine number: $this->lineNumber\nMessage: $this->originalMessage\nPayload: " . json_encode($this->payload) . "\nResponse data: " . json_encode($this->data) . "\nError snap: $this->errorSnapshot\n\n");
+        Log::error("\nFunction name: $this->functionName\nFile name: $this->fileName\nLine number: $this->lineNumber\nMessage: $this->originalMessage\nPayload: " . json_encode($this->payload) . "\nUser id: " . ($req?->user()?->id ?? null) . "\nResponse data: " . json_encode($this->data) . "\nError snap: $this->errorSnapshot\n\n");
     }
 
 

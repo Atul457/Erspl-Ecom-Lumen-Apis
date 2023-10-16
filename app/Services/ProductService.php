@@ -6,7 +6,6 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
-use App\Helpers\UtilityHelper;
 use App\Models\Cart;
 use App\Models\OfferBundling;
 use App\Models\OfferPriceBundling;
@@ -15,7 +14,7 @@ use App\Models\Shop;
 use App\Models\SubCategory;
 use App\Models\Wishlist;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**

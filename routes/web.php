@@ -38,8 +38,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/defaultAddress', 'AddressBookController@defaultAddress');
 
         // Wallet
+        $router->post('/walletHistory', 'WalletController@walletHistory');
         $router->post('/rechargeWallet', 'WalletController@rechargeWallet');
+        $router->post('/walletPaymentTest', 'WalletController@walletPaymentTest');
         $router->post('/checkWalletBalance', 'WalletController@checkWalletBalance');
+
+        // Refund
+        $router->post('/refundDetails', 'RefundController@refundDetails');
 
         // Category
         $router->post('/categoryList', 'ACategoryController@categoryList');
@@ -59,6 +64,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/removeFav', 'FavShopController@removeFav');
         $router->post('/addFavShop', 'FavShopController@addFavShop');
         $router->post('/favShopList', 'FavShopController@favShopList');
+        $router->post('/checkDistance', 'ShopController@checkDistance');
+        $router->post('/shopReviewList', 'ShopController@shopReviewList');
         $router->post('/nearestShopList', 'ShopController@nearestShopList');
         $router->post('/searchShopDetail', 'ShopController@searchShopDetail');
         $router->post('/searchProductList', 'ShopController@searchProductList'); // To confirm
@@ -69,6 +76,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // Home
         $router->post('/searchHome', 'HomeController@searchHome');
         $router->post('/searchList', 'HomeController@searchList');
+
+        // Offer
+        $router->post('/offersList', 'OfferPriceBundlingController@offersList');
+        $router->post('/availOffer', 'OfferPriceBundlingController@availOffer');
+        $router->post('/offerAvailableList', 'OfferPriceBundlingController@offerAvailableList');
 
         // Product
         $router->post('/productDetail', 'ProductController@productDetail');
@@ -97,6 +109,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/orderStage', 'OrderController@orderStage');
         $router->post('/orderReturn', 'OrderController@orderReturn');
         $router->post('/orderCancel', 'OrderController@orderCancel');
+        $router->post('/paymentStatus', 'OrderController@paymentStatus');
         $router->post('/getOrderStatus', 'OrderController@getOrderStatus');
         $router->post('/editOrderConfirm', 'OrderController@editOrderConfirm');
         $router->post('/orderReferenceList', 'OrderController@orderReferenceList');
@@ -105,10 +118,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
         // Paytm
         $router->post('/paytm-config', 'PaytmController@paytmConfig');
+        $router->post('/createpayment', 'PaytmController@createpayment');
 
         // Coupon
         $router->post('/applyCoupon', 'CouponController@applyCoupon');
-
+        $router->post('/couponList', 'CouponController@couponList');
     });
 
 

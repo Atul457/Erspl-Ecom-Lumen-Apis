@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\CancelReason;
 use App\Models\Home;
 use App\Models\Product;
+use App\Models\Registration;
 use App\Models\Shop;
 use App\Models\UomType;
 
@@ -26,6 +27,26 @@ class CommonHelper
         return $sqlCategoryData['name'] ?? "";
     }
 
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public static function generateTXN(int $digits = 16)
+    {
+        $i = 0; //counter
+        $pin = ""; //our default pin is blank.
+        while ($i < $digits) {
+            //generate a random number between 0 and 9.
+            $pin .= mt_rand(0, 9);
+            $i++;
+        }
+        return $pin;
+    }
+
+
+    
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @todo Document this
@@ -234,6 +255,7 @@ class CommonHelper
     }
 
 
+
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @todo Document this
@@ -245,6 +267,26 @@ class CommonHelper
             ?->toArray();
         $sqlCategoryData = $sqlCategory;
         return $sqlCategoryData['name'];
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public static function customerNameWeb($customer_id)
+    {
+        $sqlCategory = Registration::select("first_name", "middle_name", "last_name")
+            ->where("id", $customer_id)
+            ->first()
+            ?->toArray();
+        $sqlCategoryData = $sqlCategory;
+        return ($sqlCategoryData['first_name'] ?? "")
+            . " " .
+            ($sqlCategoryData['middle_name'] ?? "")
+            . " " .
+            ($sqlCategoryData['last_name'] ?? "");
     }
 
 

@@ -24,6 +24,7 @@ return new class extends Migration
             $table->float("version");
             $table->string("contact")->collation('utf8_general_ci');
             $table->string("zap_key")->collation('utf8_general_ci');
+            $table->integer("sms_mobile_digit")->default(6)->collation('utf8_general_ci');
             $table->integer("count2");
             $table->integer("count1");
             $table->string("fav_icon")->collation('utf8_general_ci');

@@ -54,4 +54,28 @@ class WalletController extends Controller
         $res = $this->service->rechargeWallet($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function walletHistory(Request $req)
+    {
+        $res = $this->service->walletHistory($req);
+        return response($res["response"], $res["statusCode"]);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function walletPaymentTest(Request $req)
+    {
+        $res = $this->service->walletPaymentTest($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

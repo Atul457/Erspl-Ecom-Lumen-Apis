@@ -15,7 +15,7 @@ class RegistrationsTempTableSeeder extends Seeder
     public function run(): void
     {
 
-        $defaultOtp = "0000";
+        $defaultOtp = "1234";
         $referralPostFix = "ERSPL";
         $defaultRegistrationType = "App";
 

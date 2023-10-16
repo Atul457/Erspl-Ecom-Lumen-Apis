@@ -31,7 +31,7 @@ use App\Models\Wallet;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 use PhpParser\Node\Expr;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2455,7 +2455,7 @@ class OrderService
                 "orderId" => "required|numeric"
             ]
         );
-        
+
         $orderId = $data["orderId"];
 
         $sqlOrder = Order::select("shop_id", "payment_type", "payment_status")
@@ -2584,6 +2584,243 @@ class OrderService
             ],
             "statusCode" => StatusCodes::OK
         ];
+    }
 
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function paymentStatus(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [],
+            [
+                "orderId" => "required|numeric",
+                "txnStatus" => "required",
+                "paymentMode" => "required",
+                "txnDate" => "required",
+                "txnId" => "required",
+            ]
+        );
+
+        $currentDate = date('Y-m-d H:i:s');
+        $orderId     = $data['orderId'];
+        $userId      = $req->user()->id;
+        $txnId       = $data['txnId'];
+        $txnDate     = date('Y-m-d H:i:s', strtotime($data['txnDate']));
+        $txnStatus   = $data['txnStatus'];
+        $paymentMode = $data['paymentMode'];
+
+        $orderStatus = 0;
+        if ($txnStatus == 'TXN_SUCCESS') {
+            $paymentStatus = 1;
+            $msg = 'Order Placed Successfully';
+        } else if ($txnStatus == 'PENDING') {
+            $paymentStatus = 0;
+            $msg = 'Order Placed. Waiting For Payment Confirmation';
+        } else {
+            $paymentStatus = 2;
+            $orderStatus   = 4;
+            $msg = 'Payment Failed';
+        }
+
+        $order = Order::where('order_reference', $orderId)
+            ->first();
+
+        if ($order) {
+            $order->status = $orderStatus;
+            $order->paytm_txn_id = $txnId;
+            $order->payment_txn_date = $txnDate;
+            $order->payment_mode = $paymentMode;
+            $order->payment_status = $paymentStatus;
+            $order->save();
+        } else
+            throw ExceptionHelper::error([
+                "message" => "tbl_order row where order_reference: $orderId not found"
+            ]);
+
+        // Assigning this true since the code will only come here if order is updated
+        $sqlUpdate = true;
+
+        if ($sqlUpdate) {
+            if ($paymentStatus == 1) {
+
+                /*START REFERRAL BOUNS CODE*/
+                $sqlhome = Home::where('id', 1)->first();
+                $sqlReferral = Registration::where('id', $userId)
+                    ->where('referral_by', '!=', '')
+                    ->where('referral_status', 0)
+                    ->select('referral_by', 'referral_code');
+
+                $referral_amount = $sqlhome->referral_amount;
+
+                if ($sqlReferral->count() > 0) {
+                    $sqlReferralData = $sqlReferral
+                        ->first()
+                        ->toArray();
+
+                    $referral_code = $sqlReferralData['referral_code'];
+                    $referral_by = $sqlReferralData['referral_by'];
+
+                    $sqlReferralUser = Registration::where('referral_code', $referral_by)
+                        ->select('id')
+                        ->first();
+
+                    if ($sqlReferralUser) {
+                        $wallet = new Wallet();
+                        $wallet->customer_id = $sqlReferralUser->id;
+                        $wallet->order_id = $orderId;
+                        $wallet->amount = $referral_amount;
+                        $wallet->remark = 'Referral Bonus';
+                        $wallet->referral_code = $referral_code;
+                        $wallet->referral_by = $referral_by;
+                        $wallet->date = $currentDate;
+
+                        $wallet->save();
+
+                        Registration::where('id', $userId)->update(['referral_status' => 1]);
+                    }
+                }
+
+                /*END REFERRAL BOUNS CODE*/
+
+                Cart::where('user_id', $userId)->delete();
+
+                UtilityHelper::disableSqlStrictMode();
+                
+                $sqlOrderShop = Order::select('order_date', 'shop_id', 'shop_city_id', 'order_id')
+                    ->where('order_reference', $orderId)
+                    ->groupBy('shop_id')
+                    ->get()
+                    ->toArray();
+
+                UtilityHelper::enableSqlStrictMode();
+
+                foreach ($sqlOrderShop as $orderShopData) {
+
+                    $orderId = $orderShopData['order_id'];
+
+                    // Retrieve the credit amount
+                    $totalData = Order::where('order_id', $orderId)->sum('total');
+                    $creditAmount = $totalData;
+
+                    // Retrieve the debit amount
+                    $transactionData = OrderPrepaidTransaction::where('order_id', $orderId)
+                        ->select('aggregator_commission_amount', 'tds', 'tcs')
+                        ->first();
+
+                    if (!$transactionData)
+                        throw ExceptionHelper::error([
+                            "message" => "tbl_order_prepaid_transaction row not found with order_id: $orderId"
+                        ]);
+
+                    $debitAmount = $transactionData->aggregator_commission_amount;
+
+                    // Insert the first record
+                    $sellerLedger1 = new SellerLeger();
+                    $sellerLedger1->order_date = $orderShopData['order_date'];
+                    $sellerLedger1->shop_id = $orderShopData['shop_id'];
+                    $sellerLedger1->shop_name = CommonHelper::shopName($orderShopData['shop_id']);
+                    $sellerLedger1->shop_city_id = $orderShopData['shop_city_id'];
+                    $sellerLedger1->order_reference = $orderId;
+                    $sellerLedger1->order_id = $orderShopData['order_id'];
+                    $sellerLedger1->transaction_detail = $txnId;
+                    $sellerLedger1->payment_mode = $paymentMode;
+                    $sellerLedger1->particular = 'ORDER RECEIVED - ' . $orderShopData['order_id'];
+                    $sellerLedger1->debit = 0;
+                    $sellerLedger1->credit = $creditAmount;
+                    $sellerLedger1->datetime = $currentDate;
+                    $sellerLedger1->case = 1;
+                    $sellerLedger1->save();
+
+                    // Insert the second record
+                    $sellerLedger2 = new SellerLeger();
+                    $sellerLedger2->order_date = $orderShopData['order_date'];
+                    $sellerLedger2->shop_id = $orderShopData['shop_id'];
+                    $sellerLedger2->shop_name = CommonHelper::shopName($orderShopData['shop_id']);
+                    $sellerLedger2->shop_city_id = $orderShopData['shop_city_id'];
+                    $sellerLedger2->order_reference = $orderId;
+                    $sellerLedger2->order_id = $orderShopData['order_id'];
+                    $sellerLedger2->transaction_detail = $txnId;
+                    $sellerLedger2->payment_mode = $paymentMode;
+                    $sellerLedger2->particular = 'TCS TDS DEDUCTION - ' . $orderShopData['order_id'];
+                    $sellerLedger2->debit = $debitAmount;
+                    $sellerLedger2->credit = 0;
+                    $sellerLedger2->datetime = $currentDate;
+                    $sellerLedger2->case = 1;
+                    $sellerLedger2->save();
+
+                    /* Send Notification for ShopKeeper */
+                    $title = "Congratulations! You Have Received New Order";
+                    $body  = "Order ID : " . $orderShopData['order_id'];
+
+                    // $arrNotification["title"]    = $title;
+                    // $arrNotification["body"]     = $body;
+                    // $arrNotification["sound"]    = "";//DEFAULT_URL."notification/sound/OrderReceivedERSPL.mp3";
+                    // $arrNotification["type"]     = "orders";
+                    // $arrNotification["dataId"]   = $orderShopData['order_id'];
+                    // $arrNotification["dataId2"]  = "";
+                    // $sqlToken     = mysqli_query($cn,"select `token_id` from `tbl_shop` where `id` = '".$orderShopData['shop_id']."'");
+                    // $sqlTokenData = mysqli_fetch_array($sqlToken); 
+                    // sendPushNotification($sqlTokenData['token_id'],$arrNotification);
+
+                    CommonHelper::ceoNewOrderNotification(
+                        $title,
+                        $body,
+                        $orderShopData['order_id'],
+                        $orderShopData['shop_id']
+                    );
+
+                    /* Send Notification for Delivery Boy */
+                    $title = "New Pending Order. Order ID: " . $orderShopData['order_id'];
+                    $body  = "Open Application";
+
+                    // $arrNotification["title"]    = $title;
+                    // $arrNotification["body"]     = $body;
+                    // $arrNotification["sound"]    = "";//DEFAULT_URL."notification/sound/pendingTone.mp3";
+                    // $arrNotification["type"]     = "pendingOrder";
+                    // //$arrNotification["image"]    = "";
+                    // $arrNotification["dataId"]   = $orderShopData['order_id'];
+                    // $arrNotification["dataId2"]  = "";
+
+                    $sqlToken = Employee::where('designation_id', 3)
+                        ->where('status', 1)
+                        ->where('assign_status', 0)
+                        ->where('online_status', 1)
+                        ->where('city_id', $orderShopData['shop_city_id'])
+                        ->where('token_id', '!=', '')
+                        ->get();
+
+                    foreach ($sqlToken as $sqlTokenData) {
+                        // Send push notifications to employees with valid 'token_id'
+                        // You can use your notification function here
+                        // sendPushNotification($sqlTokenData->token_id, $arrNotification);
+                        CommonHelper::starPendingOrderNotification(
+                            $title,
+                            $body,
+                            $orderShopData['order_id'],
+                            $sqlTokenData->token_id
+                        );
+                    }
+                }
+            } else if ($paymentStatus == 0) {
+                Cart::where('user_id', $userId)->delete();
+            }
+            return [
+                "response" => [
+                    "status" => true,
+                    "statusCode" => StatusCodes::OK,
+                    "data" => [
+                        "paymentStatus" => $paymentStatus
+                    ],
+                    "message" => $msg,
+                ],
+                "statusCode" => StatusCodes::OK
+            ];
+        }
     }
 }

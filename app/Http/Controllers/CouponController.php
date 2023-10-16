@@ -30,4 +30,16 @@ class CouponController extends Controller
         $res = $this->service->applyCoupon($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function couponList(Request $req)
+    {
+        $res = $this->service->couponList($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

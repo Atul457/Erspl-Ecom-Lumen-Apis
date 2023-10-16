@@ -8,7 +8,8 @@ use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Coupon;
 use App\Models\Order;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -403,6 +404,88 @@ class CouponService
             throw ExceptionHelper::error([
                 "statusCode" => StatusCodes::BAD_REQUEST,
                 "message" => "This coupon code is invalid or has expired."
+            ]);
+        }
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function couponList(Request $req)
+    {
+        $couponList = array();
+        $userId = $req->user()->id;
+        $currentDate = date('Y-m-d H:i:s');
+
+        $sqlCoupon = Coupon::where('status', 1)
+            ->where('start_date', '<=', $currentDate)
+            ->where('expire_date', '>=', $currentDate)
+            ->where(function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                    ->orWhereNull('user_id');
+            })
+            ->orderBy('expire_date', 'desc');
+
+        $count = $sqlCoupon->count();
+
+        if ($count > 0) {
+            $subtitle = "";
+            $couponStatus = "0";
+
+            $sqlCoupon = $sqlCoupon
+                ->get()
+                ->toArray();
+
+            foreach ($sqlCoupon as $sqlCouponData) {
+                if ($sqlCouponData['coupon_subtitle'] != null) {
+                    $subtitle = $sqlCouponData['coupon_subtitle'];
+                }
+
+                if ($sqlCouponData['times_used'] == 1) {
+                    $sqlOrder = Order::select("order_id")
+                        ->where([
+                            "customer_id" => $userId,
+                            "coupon" => $sqlCouponData['couponcode'],
+                            "payment_status" => 1
+                        ])
+                        ->groupBy("order_id");
+
+                    $usedCount = $sqlOrder->count();
+
+                    if ($usedCount < $sqlCouponData['time_to_use']) {
+                        $couponStatus = "1";
+                    }
+                } else if ($sqlCouponData['times_used'] == 0) {
+                    $couponStatus = "1";
+                }
+
+                $couponList[] = array(
+                    'title' => $sqlCouponData['coupon_title'],
+                    'subtitle' => $subtitle,
+                    "coupon" => $sqlCouponData['couponcode'],
+                    "expireDate" => date('d-m-Y', strtotime($sqlCouponData['expire_date'])),
+                    "couponStatus" => $couponStatus
+                );
+            }
+
+            return [
+                "response" => [
+                    "status" => true,
+                    "statusCode" => StatusCodes::OK,
+                    "data" => [
+                        "couponList" => $couponList
+                    ],
+                    "message" => null,
+                ],
+                "statusCode" => StatusCodes::OK
+            ];
+        } else {
+            throw ExceptionHelper::error([
+                "message" => "Coupon List Not Found.",
+                "statusCode" => StatusCodes::NOT_FOUND
             ]);
         }
     }

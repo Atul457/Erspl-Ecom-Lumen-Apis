@@ -6,7 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
 use App\Models\Rating;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**

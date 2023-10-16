@@ -6,7 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\RequestValidator;
 use App\Models\ACategory;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**

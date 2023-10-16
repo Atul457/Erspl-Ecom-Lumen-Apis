@@ -11,7 +11,7 @@ use App\Models\Rating;
 use App\Models\Shop;
 use App\Models\ShopTime;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**

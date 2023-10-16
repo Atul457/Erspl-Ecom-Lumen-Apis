@@ -10,7 +10,7 @@ use App\Models\Registration;
 use App\Models\RegistrationTemp;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -59,7 +59,7 @@ class RegistrationTempService
      */
     public function isDefaultMobile($mobile)
     {
-        $numbersWithDefaultOTP = [];
+        $numbersWithDefaultOTP = ["7737772424", "8239108159", "8209446253"];
         $isDefaultNumber = in_array($mobile, $numbersWithDefaultOTP);
         return $isDefaultNumber ? 1 : 0;
     }
@@ -181,7 +181,7 @@ class RegistrationTempService
      */
     public function resendOtp(Request $req)
     {
-        $defaultOtp = "0000";
+        $defaultOtp = "1234";
         $otp = OTPHelper::generateOtp();
 
         $data = RequestValidator::validate(
@@ -226,7 +226,7 @@ class RegistrationTempService
      */
     public function signupAccount(Request $req)
     {
-        $defaultOtp = "0000";
+        $defaultOtp = "1234";
         $referralPostFix = "ERSPL";
         $defaultRegistrationType = "App";
 

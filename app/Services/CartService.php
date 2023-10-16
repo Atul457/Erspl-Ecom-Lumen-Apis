@@ -20,7 +20,7 @@ use App\Models\Shop;
 use App\Models\ShopTime;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\DB;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**

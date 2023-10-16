@@ -9,7 +9,7 @@ use App\Helpers\RequestValidator;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\Wishlist;
-use Laravel\Lumen\Http\Request;
+use Illuminate\Http\Request;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**

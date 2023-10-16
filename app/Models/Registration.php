@@ -30,6 +30,7 @@ class Registration extends Model implements AuthenticatableContract, Authorizabl
         'mobile',
         'status',
         'attempt',
+        'referral_status',
         'password',
         'reg_type',
         'last_name',

@@ -2,8 +2,9 @@
 
 namespace App\Constants;
 
-class StatusCodes{
-   
+class StatusCodes
+{
+
    const OK = 200;
    const NOT_FOUND = 404;
    const BAD_REQUEST = 400;
@@ -12,5 +13,4 @@ class StatusCodes{
    const INTERNAL_SERVER_ERROR = 500;
    const RESOURCE_ALREADY_EXISTS = 409;
    const FORBIDDEN = 403;
-   
 }
