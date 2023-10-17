@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('acategory', function (Blueprint $table) {
+        Schema::create('tbl_acategory', function (Blueprint $table) {
             $table->id();
             $table->string('name')->default("");
             $table->unsignedBigInteger('industries_id')->nullable();
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('acategory');
+        Schema::dropIfExists('tbl_acategory');
     }
 };

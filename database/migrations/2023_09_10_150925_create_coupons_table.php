@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coupon', function (Blueprint $table) {
+        Schema::create('tbl_coupon', function (Blueprint $table) {
             $table->id();
             $table->text("coupon_title")->nullable()->default("");
             $table->text("coupon_subtitle")->nullable()->default("");
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent();
 
             $table->foreign('user_id')->references('id')->on('tbl_registration');
-            $table->foreign('category_id')->references('id')->on('acategory');
+            $table->foreign('category_id')->references('id')->on('tbl_acategory');
             $table->foreign('product_id')->references('id')->on('product');
 
         });
@@ -49,6 +49,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('coupon');
+        Schema::dropIfExists('tbl_coupon');
     }
 };

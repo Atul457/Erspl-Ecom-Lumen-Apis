@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FavShop extends Model
 {
-    protected $table = "fav_shop";
+    protected $table = "tbl_fav_shop";
 
      /**
      * The attributes that are mass assignable.

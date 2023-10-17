@@ -15,7 +15,7 @@ class CityTableSeeder extends Seeder
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
-        $jsonFilePath = resource_path("../data/city.json");
+        $jsonFilePath = resource_path("../data/tbl_city.json");
         $jsonContent = File::get($jsonFilePath);
         $dataArray = json_decode($jsonContent, true);
         City::insert($dataArray);

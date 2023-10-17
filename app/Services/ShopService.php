@@ -38,7 +38,7 @@ class ShopService
                 'numeric' => ':attribute must be a number'
             ],
             [
-                "categoryId" => "required|exists:acategory,id",
+                "categoryId" => "required|exists:tbl_acategory,id",
                 "latitude" => "required|numeric",
                 "longitude" => "required|numeric",
             ]

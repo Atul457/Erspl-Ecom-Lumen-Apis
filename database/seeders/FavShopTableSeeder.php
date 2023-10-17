@@ -17,7 +17,7 @@ class FavShopTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonFilePath = resource_path("../data/fav_shop.json");
+        $jsonFilePath = resource_path("../data/tbl_fav_shop.json");
         $jsonContent = File::get($jsonFilePath);
         $dataArray = json_decode($jsonContent, true);
         foreach ($dataArray as $_) {

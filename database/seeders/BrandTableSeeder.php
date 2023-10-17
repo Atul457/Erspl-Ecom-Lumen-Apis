@@ -13,7 +13,7 @@ class BrandTableSeeder extends Seeder
      */
     public function run(): void 
     {
-        $jsonFilePath = resource_path("../data/brand.json");
+        $jsonFilePath = resource_path("../data/tbl_brand.json");
         $jsonContent = File::get($jsonFilePath);
         $dataArray = json_decode($jsonContent, true);
         Brand::insert($dataArray);

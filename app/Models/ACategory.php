@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class ACategory extends Model
 {
-    protected $table = "acategory";
+    protected $table = "tbl_acategory";
 }

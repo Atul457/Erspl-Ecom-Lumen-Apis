@@ -189,7 +189,9 @@ class AddressBookService
                 'string' => ':attribute must be a string',
                 "required" => ":attribute is a required field"
             ],
-            ['addressId' => 'string|required|exists:address_book,id']
+            [
+                'addressId' => 'string|required|exists:tbl_addressbook,id'
+            ]
         );
 
         $addressBookCount = AddressBook::where("customer_id", $userId)

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('home', function (Blueprint $table) {
+        Schema::create('tbl_home', function (Blueprint $table) {
             $table->id();
             $table->float("gst");
             $table->string("logo")->collation('utf8_general_ci');
@@ -68,6 +68,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('home');
+        Schema::dropIfExists('tbl_home');
     }
 };

@@ -13,7 +13,7 @@ class ACategoryTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonFilePath = resource_path("../data/acategory.json");
+        $jsonFilePath = resource_path("../data/tbl_acategory.json");
         $jsonContent = File::get($jsonFilePath);
         $dataArray = json_decode($jsonContent, true);
         ACategory::insert($dataArray);

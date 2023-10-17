@@ -64,8 +64,8 @@ return new class extends Migration
             $table->timestamp('updated_at')->useCurrent();
 
             $table->foreign("subcategory_id")->references("id")->on("scategory");
-            $table->foreign("category_id")->references("id")->on("acategory");
-            $table->foreign("brand_id")->references("id")->on("brand");
+            $table->foreign("category_id")->references("id")->on("tbl_acategory");
+            $table->foreign("brand_id")->references("id")->on("tbl_brand");
             $table->foreign("shop_id")->references("id")->on("shop");
             $table->foreign("product_id")->references("id")->on("product");
 

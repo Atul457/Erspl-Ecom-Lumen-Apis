@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::create('cart', function (Blueprint $table) {
+        Schema::create('tbl_cart', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("user_id")->nullable();
             $table->unsignedBigInteger("shop_id")->nullable();
@@ -37,7 +37,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('cart');
+        Schema::dropIfExists('tbl_cart');
         Schema::enableForeignKeyConstraints();
     }
 };

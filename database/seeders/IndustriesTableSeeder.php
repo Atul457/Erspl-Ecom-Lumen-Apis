@@ -16,7 +16,7 @@ class IndustriesTableSeeder extends Seeder
      */
     public function run()
     {
-        $jsonFilePath = resource_path("../data/industries.json");
+        $jsonFilePath = resource_path("../data/tbl_industries.json");
         $jsonContent = File::get($jsonFilePath);
         $dataArray = json_decode($jsonContent, true);
         Industry::insert($dataArray);

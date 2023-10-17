@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('address_book', function (Blueprint $table) {
+        Schema::create('tbl_addressbook', function (Blueprint $table) {
             $table->id();
             $table->string("name")->nullable()->collation('utf8_general_ci');
             $table->string('city')->nullable()->collation('utf8_general_ci');
@@ -45,6 +45,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('address_book');
+        Schema::dropIfExists('tbl_addressbook');
     }
 };

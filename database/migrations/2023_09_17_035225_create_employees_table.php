@@ -57,7 +57,7 @@ return new class extends Migration
             $table->dateTime('date')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
-            $table->foreign("city_id")->references("id")->on("city");
+            $table->foreign("city_id")->references("id")->on("tbl_city");
             $table->foreign("state_id")->references("id")->on("state");
         });
     }

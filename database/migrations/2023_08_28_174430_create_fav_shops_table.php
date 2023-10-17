@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fav_shop', function (Blueprint $table) {
+        Schema::create('tbl_fav_shop', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("shop_id")->nullable();
             $table->unsignedBigInteger("user_id")->nullable();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fav_shop');
+        Schema::dropIfExists('tbl_fav_shop');
     }
 };

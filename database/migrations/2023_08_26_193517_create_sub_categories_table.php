@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer("status")->nullable()->default(1);
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
-            $table->foreign('parent_id')->references('id')->on('acategory');
+            $table->foreign('parent_id')->references('id')->on('tbl_acategory');
         });
     }
 

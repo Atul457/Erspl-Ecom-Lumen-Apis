@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AddressBook extends Model
 {
-    protected $table = 'address_book';
+    protected $table = 'tbl_addressbook';
 
     /**
      * The attributes that are mass assignable.

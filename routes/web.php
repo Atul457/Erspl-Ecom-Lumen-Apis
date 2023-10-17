@@ -53,6 +53,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
         // Notification
         $router->post('/notificationList', 'NotificationController@notificationList');
+        $router->post('/testCeoNotification', 'NotificationController@testCeoNotification');
+        $router->post('/testCeoNotification2', 'NotificationController@testCeoNotification2');
 
         // Referral
         $router->post('/referralList', 'WalletController@referralList');
@@ -72,6 +74,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
         // Slider
         $router->post('/sliderList', 'SliderController@sliderList');
+        $router->post('/bannerList', 'SliderController@bannerList');
+        $router->post('/bannerProductsList', 'SliderController@bannerProductsList');
 
         // Home
         $router->post('/searchHome', 'HomeController@searchHome');

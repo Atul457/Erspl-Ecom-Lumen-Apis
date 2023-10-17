@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\StatusCodes;
-use App\Models\Notification;
 use App\Services\NotificationService;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
@@ -22,6 +20,7 @@ class NotificationController extends Controller
     }
 
 
+
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @todo Document this
@@ -29,6 +28,30 @@ class NotificationController extends Controller
     public function notificationList()
     {
         $res = $this->service->notificationList();
+        return response($res["response"], $res["statusCode"]);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function testCeoNotification()
+    {
+        $res = $this->service->testCeoNotification();
+        return response($res["response"], $res["statusCode"]);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function testCeoNotification2(Request $req)
+    {
+        $res = $this->service->testCeoNotification2($req);
         return response($res["response"], $res["statusCode"]);
     }
 }

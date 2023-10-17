@@ -34,4 +34,28 @@ class SliderController extends Controller
         $res = $this->service->sliderList();
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function bannerList(Request $req)
+    {
+        $res = $this->service->bannerList($req);
+        return response($res["response"], $res["statusCode"]);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function bannerProductsList(Request $req)
+    {
+        $res = $this->service->bannerProductsList($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

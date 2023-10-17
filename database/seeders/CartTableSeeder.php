@@ -17,7 +17,7 @@ class CartTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonFilePath = resource_path("../data/cart.json");
+        $jsonFilePath = resource_path("../data/tbl_cart.json");
         $jsonContent = File::get($jsonFilePath);
         $cartItems = json_decode($jsonContent, true);
 

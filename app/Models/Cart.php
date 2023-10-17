@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
-    protected $table = "cart";
+    protected $table = "tbl_cart";
 
     /**
      * The attributes that are mass assignable.

@@ -13,7 +13,7 @@ class NotificationTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonFilePath = resource_path("../data/notification.json");
+        $jsonFilePath = resource_path("../data/tbl_notification.json");
         $jsonContent = File::get($jsonFilePath);
         $dataArray = json_decode($jsonContent, true);
         Notification::insert($dataArray);

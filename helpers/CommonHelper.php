@@ -46,7 +46,7 @@ class CommonHelper
     }
 
 
-    
+
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @todo Document this
@@ -333,9 +333,54 @@ class CommonHelper
     /**
      * @todo Document this
      */
+    public static function ceoNewOrderNotification2($head, $body, $orderId, $token)
+    {
+        $headings = array(
+            "en" => $head
+        );
+
+        $content = array(
+            "en" => $body
+        );
+
+        $playerId = array();
+        array_push($playerId, $token);
+        $fields = array(
+            'app_id' => env("APP_ID__"),
+            'android_channel_id' => env("ANDROID_CHANNEL_ID__"),
+            'include_player_ids' => $playerId,
+            'priority' => 0,
+            'data' => array(
+                "orderId" => $orderId,
+                "type" => 'newOrder'
+            ),
+            'headings' => $headings,
+            'contents' => $content
+        );
+
+        $fields = json_encode($fields);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+
+        curl_exec($ch);
+        curl_close($ch);
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
     public static function ceoNewOrderNotification($head, $body, $orderId, $token)
     {
-        $headings      = array(
+        $headings = array(
             "en" => $head
         );
         $content = array(
