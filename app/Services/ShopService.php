@@ -237,7 +237,7 @@ class ShopService
                 'numeric' => ':attribute must be a number'
             ],
             [
-                "shopId" => "required|exists:shop,id",
+                "shopId" => "required|exists:tbl_shop,id",
                 "latitude" => "required|numeric",
                 "longitude" => "required|numeric",
             ]
@@ -312,12 +312,12 @@ class ShopService
         else
             $address = $data_['address'];
 
-        $shopCategory = Product::select("product.category_id")
+        $shopCategory = Product::select("tbl_product.category_id")
             ->where([
-                "product.shop_id" =>  $shopId,
-                "product.status" => 1
+                "tbl_product.shop_id" =>  $shopId,
+                "tbl_product.status" => 1
             ])
-            ->groupBy("product.category_id")
+            ->groupBy("tbl_product.category_id")
             ->get()
             ->toArray();
 
@@ -621,7 +621,7 @@ class ShopService
                 'shopId.exists' => 'Product List Not Found.'
             ],
             [
-                "shopId" => "required|exists:product,shop_id",
+                "shopId" => "required|exists:tbl_product,shop_id",
             ]
         );
 
@@ -804,7 +804,7 @@ class ShopService
                 'shopId.exists' => "shop with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|exists:shop,id",
+                "shopId" => "required|exists:tbl_shop,id",
             ]
         );
 

@@ -82,11 +82,11 @@ class WalletService
 
         $userId = $data["userId"];
 
-        $baseQuery = Wallet::select("wallet.amount", "wallet.remark", "wallet.order_id", "wallet.referral_by",  DB::raw("CONCAT_WS(' ', NULLIF(TRIM(tbl_registration.first_name), ''), NULLIF(TRIM(tbl_registration.middle_name), ''), NULLIF(TRIM(tbl_registration.last_name), '')) as invitedTo"), DB::raw("DATE_FORMAT(wallet.date, '%d-%M-%Y') as date"))
-            ->where("wallet.customer_id", $userId)
-            ->where("wallet.remark", 'LIKE', '%Referral Bonus%')
-            ->orderBy("wallet.date", "desc")
-            ->join("tbl_registration", "wallet.referral_code", "tbl_registration.referral_code");
+        $baseQuery = Wallet::select("tbl_wallet.amount", "tbl_wallet.remark", "tbl_wallet.order_id", "tbl_wallet.referral_by",  DB::raw("CONCAT_WS(' ', NULLIF(TRIM(tbl_registration.first_name), ''), NULLIF(TRIM(tbl_registration.middle_name), ''), NULLIF(TRIM(tbl_registration.last_name), '')) as invitedTo"), DB::raw("DATE_FORMAT(tbl_wallet.date, '%d-%M-%Y') as date"))
+            ->where("tbl_wallet.customer_id", $userId)
+            ->where("tbl_wallet.remark", 'LIKE', '%Referral Bonus%')
+            ->orderBy("tbl_wallet.date", "desc")
+            ->join("tbl_registration", "tbl_wallet.referral_code", "tbl_registration.referral_code");
 
         $referralList = $baseQuery
             ->get()
@@ -310,7 +310,7 @@ class WalletService
                 ];
             } else {
                 throw ExceptionHelper::error([
-                    "message" => "Unable to update wallet row where invoid_id: $orderId"
+                    "message" => "Unable to update tbl_wallet row where invoid_id: $orderId"
                 ]);
             }
         } else {

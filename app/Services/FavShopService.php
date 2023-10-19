@@ -32,7 +32,7 @@ class FavShopService
                 'exists' => 'shop with provided id doesn\'t exist'
             ],
             [
-                "shopId" => "required|exists:shop,id",
+                "shopId" => "required|exists:tbl_shop,id",
             ]
         );
 
@@ -88,7 +88,7 @@ class FavShopService
                 'exists' => 'shop with provided id doesn\'t exist'
             ],
             [
-                "shopId" => "required|exists:shop,id",
+                "shopId" => "required|exists:tbl_shop,id",
             ]
         );
 
@@ -184,7 +184,7 @@ class FavShopService
 
                         if (!$sqlWeelData)
                             throw ExceptionHelper::error([
-                                "message" => "shop_time row not found where shop_id: $shopId and day: $currentDay"
+                                "message" => "tbl_shop_time row not found where shop_id: $shopId and day: $currentDay"
                             ]);
 
                         if (

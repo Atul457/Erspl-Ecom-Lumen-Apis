@@ -136,7 +136,6 @@ class RegistrationTempService
         // Remove redundant keys
         unset($user["id"]);
         unset($user["created_at"]);
-        unset($user["updated_at"]);
 
         $user = Registration::insert($user);
         $user = Registration::select("id", "dob", "image", "email", "gender", "mobile", "status", "reg_type", "last_name", "alt_mobile", "first_name", "referral_by", "middle_name", "email_status", "password")
@@ -151,10 +150,6 @@ class RegistrationTempService
         $keysToHide = ['password'];
         $user = $user->makeHidden($keysToHide);
         $token = Auth::setTTL(24 * 10 * 60)->login($user);
-
-        RegistrationTemp::where($whereQuery)->update([
-            "tInfo_temp" => $token
-        ]);
 
         Registration::where($whereQuery)->update([
             "tInfo_temp" => $token

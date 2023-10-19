@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->date('order_date')->nullable();
             $table->unsignedBigInteger('shop_id')->nullable();
-            $table->string('shop_name')->nullable();
+            $table->string('shop_name', 255)->nullable();
             $table->unsignedBigInteger('shop_city_id')->nullable();
             $table->string('order_reference', 50)->nullable();
             $table->string('order_id', 50)->nullable();
@@ -22,12 +22,10 @@ return new class extends Migration
             $table->float('debit', 10, 2)->nullable();
             $table->float('credit', 10, 2)->nullable();
             $table->float('balance', 10, 2)->nullable();
-            $table->integer('case')->nullable()->comment('1=order place amount 0= reversal/updated 2=pgComm');
+            $table->integer('case')->nullable()->comment('1=order place amount 0=reversal/updated 2=pgComm');
             $table->datetime('datetime')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
 
-            $table->foreign("shop_id")->references("id")->on("shop");
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
             $table->foreign('shop_city_id')->references('id')->on('tbl_city');
 
         });

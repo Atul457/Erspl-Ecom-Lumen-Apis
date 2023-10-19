@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Slider extends Model
 {
-    protected $table = "slider";
+    protected $table = "tbl_slider";
+    public $timestamps = false; // This disables created_at and updated_at columns
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AddressBook extends Model
 {
     protected $table = 'tbl_addressbook';
+    public $timestamps = false; // This disables created_at and updated_at columns
 
     /**
      * The attributes that are mass assignable.

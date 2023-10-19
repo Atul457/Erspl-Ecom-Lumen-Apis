@@ -51,8 +51,8 @@ class ProductService
         $distinctSubCategories = $baseQuery
             ->where(["category_id" => $data["categoryId"]])
             ->select("subcategory_id")
-            ->distinct("product.subcategory_id")
-            ->orderBy("product.subcategory_id")
+            ->distinct("tbl_product.subcategory_id")
+            ->orderBy("tbl_product.subcategory_id")
             ->get()
             ->toArray();
 
@@ -123,9 +123,9 @@ class ProductService
                 "message" => "Product Not Found."
             ]);
 
-        $baseQuery = Product::select("product.*", "shop.name as shop_name")
+        $baseQuery = Product::select("tbl_product.*", "tbl_shop.name as shop_name")
             ->where([
-                "product.status" => 1,
+                "tbl_product.status" => 1,
                 "shop_id" => $shopId,
             ])
             ->where(function ($query) use ($search) {
@@ -134,7 +134,7 @@ class ProductService
                     ->orWhere("keywords", "LIKE", "% $search,%")
                     ->orWhere("keywords", "LIKE", "%,$search%");
             })
-            ->join("shop", "shop.id", "product.shop_id");
+            ->join("tbl_shop", "tbl_shop.id", "tbl_product.shop_id");
 
         if (!empty($categoryId))
             $baseQuery = $baseQuery
@@ -264,8 +264,8 @@ class ProductService
                 'shopId.exists' => "Shop with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|exists:shop,id",
-                "productId" => "required|exists:product,id",
+                "shopId" => "required|exists:tbl_shop,id",
+                "productId" => "required|exists:tbl_product,id",
             ]
         );
 

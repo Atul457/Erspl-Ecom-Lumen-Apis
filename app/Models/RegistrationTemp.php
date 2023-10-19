@@ -10,6 +10,7 @@ class RegistrationTemp extends Model
     use HasFactory;
 
     protected $table = "tbl_registration_temp";
+    public $timestamps = false; // This disables created_at and updated_at columns
 
       /**
      * The attributes that are mass assignable.

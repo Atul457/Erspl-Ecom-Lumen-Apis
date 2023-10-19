@@ -17,8 +17,6 @@ return new class extends Migration
             $table->string('keyword')->nullable();
             $table->string('city')->nullable();
             $table->datetime('datetime')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
 
             $table->foreign('user_id')->references('id')->on('tbl_registration');
         });

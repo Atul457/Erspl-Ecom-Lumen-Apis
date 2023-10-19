@@ -14,27 +14,23 @@ return new class extends Migration
     public function up()
     {
         Schema::create('tbl_addressbook', function (Blueprint $table) {
-            $table->id();
-            $table->string("name")->nullable()->collation('utf8_general_ci');
-            $table->string('city')->nullable()->collation('utf8_general_ci');
-            $table->string('flat')->nullable()->collation('utf8_general_ci');
-            $table->string('state')->nullable()->collation('utf8_general_ci');
-            $table->string('mobile')->nullable()->collation('utf8_general_ci');
-            $table->string('pincode')->nullable()->collation('utf8_general_ci');
-            $table->string('country')->nullable()->collation('utf8_general_ci');
-            $table->string('latitude')->nullable()->collation('utf8_general_ci');
-            $table->string('landmark')->nullable()->collation('utf8_general_ci');
-            $table->string('longitude')->nullable()->collation('utf8_general_ci');
-            $table->longText('address')->nullable()->collation('utf8_general_ci');
-            $table->unsignedBigInteger('customer_id');
-            $table->tinyInteger('default_status')->default(0);
-            $table->integer('address_type')->nullable()->comment("1 = home, 2 = work, 3 = other");
-
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->string('name', 225);
+            $table->string('mobile', 15)->nullable();
+            $table->string('pincode', 8)->nullable();
+            $table->string('city', 50)->nullable();
+            $table->string('state', 50)->nullable();
+            $table->string('country', 255)->nullable();
+            $table->string('address', 225)->nullable();
+            $table->unsignedBigInteger('customer_id')->nullable();
+            $table->string('flat', 255)->nullable();
+            $table->string('landmark', 255)->nullable();
+            $table->integer('address_type')->nullable()->comment('1 = home, 2 = work, 3 = other');
+            $table->integer('default_status')->default(0);
+            $table->string('latitude', 25)->nullable();
+            $table->string('longitude', 25)->nullable();
 
             $table->foreign('customer_id')->references('id')->on('tbl_registration');
-            
         });
     }
 

@@ -36,18 +36,19 @@ class WishlistService
             ->toArray();
 
         if (!count($wishlist))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "No products in wishlist."
             ]);
 
         foreach ($wishlist as $sqlData) {
 
-            $sqlProduct = Product::select("product.*", "shop.name as shop_name")
+            $sqlProduct = Product::select("tbl_product.*", "tbl_shop.name as shop_name")
                 ->where([
-                    "product.status" => 1,
-                    "product.id" => $sqlData["product_id"]
+                    "tbl_product.status" => 1,
+                    "tbl_product.id" => $sqlData["product_id"]
                 ])
-                ->join("shop", "shop.id", "product.shop_id")
+                ->join("tbl_shop", "tbl_shop.id", "tbl_product.shop_id")
                 ->get()
                 ->toArray();
 
@@ -131,7 +132,7 @@ class WishlistService
                 'exists' => 'product with provided id doesn\'t exist'
             ],
             [
-                "productId" => "required|numeric|exists:product,id",
+                "productId" => "required|numeric|exists:tbl_product,id",
             ]
         );
 
@@ -187,7 +188,7 @@ class WishlistService
                 'exists' => 'product with provided id doesn\'t exist'
             ],
             [
-                "productId" => "required|numeric|exists:product,id",
+                "productId" => "required|numeric|exists:tbl_product,id",
             ]
         );
 

@@ -15,6 +15,7 @@ class Registration extends Model implements AuthenticatableContract, Authorizabl
     use Authenticatable, Authorizable, HasFactory;
 
     protected $table = "tbl_registration";
+    public $timestamps = false; // This disables created_at and updated_at columns
 
     /**
      * The attributes that are mass assignable.

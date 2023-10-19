@@ -14,21 +14,19 @@ return new class extends Migration
     public function up()
     {
         Schema::create('tbl_industries', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->default("");
-            $table->string('offer_title')->nullable();
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->string('name', 255);
+            $table->text('offer_title');
+            $table->text('icon');
+            $table->text('catlog');
+            $table->string('image', 255)->nullable();
+            $table->string('photo', 255)->nullable();
             $table->integer('category_order')->nullable();
-            $table->longText('icon')->nullable();
-            $table->longText('catlog')->nullable();
-            $table->string('image')->nullable();
-            $table->string('photo')->nullable();
-            $table->string('slug_url')->default("");
-            $table->longText('meta_title')->nullable();
-            $table->longText('meta_keywords')->nullable();
-            $table->longText('meta_description')->nullable();
-            $table->integer('status')->nullable()->default(1);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->integer('status')->default(1);
+            $table->text('meta_title');
+            $table->text('meta_description');
+            $table->text('meta_keywords');
+            $table->text('slug_url');
         });
     }
 

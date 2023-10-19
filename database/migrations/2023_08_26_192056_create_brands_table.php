@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string("name");
             $table->string("image");
             $table->integer("brand_order");
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

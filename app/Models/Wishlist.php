@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Wishlist extends Model
 {
-    protected $table = "wishlist";
+    protected $table = "tbl_wishlist";
+    public $timestamps = false; // This disables created_at and updated_at columns
 
      /**
      * The attributes that are mass assignable.

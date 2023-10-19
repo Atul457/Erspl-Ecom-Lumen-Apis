@@ -12,14 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tbl_fav_shop', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("shop_id")->nullable();
-            $table->unsignedBigInteger("user_id")->nullable();
-            $table->dateTime("datetime")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('shop_id')->nullable();
+            $table->datetime('datetime')->nullable();
 
-            $table->foreign("shop_id")->references("id")->on("shop");
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
             $table->foreign("user_id")->references("id")->on("tbl_registration");
         });
     }

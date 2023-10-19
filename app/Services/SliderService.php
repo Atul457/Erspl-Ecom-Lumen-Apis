@@ -193,8 +193,8 @@ class SliderService
                 'bannerId.exists' => "slider with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "numeric|required|exists:shop,id",
-                "bannerId" => "numeric|required|exists:slider,id",
+                "shopId" => "numeric|required|exists:tbl_shop,id",
+                "bannerId" => "numeric|required|exists:tbl_slider,id",
             ]
         );
 

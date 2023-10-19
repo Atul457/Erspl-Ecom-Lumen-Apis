@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Wallet extends Model
 {
-    protected $table = "wallet";
+    protected $table = "tbl_wallet";
+    public $timestamps = false; // This disables created_at and updated_at columns
 }

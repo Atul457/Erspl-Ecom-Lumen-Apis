@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('tbl_hsncode', function (Blueprint $table) {
             $table->id();
-            $table->string("hsn_code");
-            $table->text("hsn_text");
-            $table->string("tax_code");
-            $table->integer("tax_rate");
-            $table->integer("cess");
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->string('hsn_code', 30)->nullable();
+            $table->text('hsn_text');
+            $table->string('tax_code', 50)->nullable();
+            $table->integer('tax_rate')->nullable();
+            $table->integer('cess')->default(0);
         });
     }
 

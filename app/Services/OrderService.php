@@ -646,7 +646,6 @@ class OrderService
                 "address" => "required",
                 "city" => "required",
                 "state" => "required",
-                "state" => "required",
                 "flat" => "required",
                 "landmark" => "required",
                 "latitude" => "required|numeric",
@@ -1296,7 +1295,7 @@ class OrderService
                 "reasonId.exists" => "cancel reason with id: :input doesn't exist"
             ],
             [
-                "orderId" => "required|numeric|exists:order,order_id",
+                "orderId" => "required|numeric|exists:tbl_order,order_id",
                 "reasonId" => "numeric|exists:cancel_reason,id",
                 "remark" => "string"
             ]
@@ -1590,7 +1589,7 @@ class OrderService
                 "orderId.exists" => "order with id: :input doesn't exist"
             ],
             [
-                "orderId" => "required|numeric|exists:order,order_id"
+                "orderId" => "required|numeric|exists:tbl_order,order_id"
             ]
         );
 
@@ -1725,7 +1724,7 @@ class OrderService
                 "orderId.exists" => "order with id: :input doesn't exist"
             ],
             [
-                "orderId" => "required|numeric|exists:order,order_id",
+                "orderId" => "required|numeric|exists:tbl_order,order_id",
                 "reasonId" => "numeric",
                 "remark" => "string"
             ]
@@ -1990,7 +1989,7 @@ class OrderService
                             'qty',
                             'return_reason_id',
                             'return_remark',
-                        ])->from('order')->where('order_id', $orderId);
+                        ])->from('tbl_order')->where('order_id', $orderId);
                     }
                 );
 

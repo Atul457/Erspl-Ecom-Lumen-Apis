@@ -44,8 +44,8 @@ class CartService
                 'productId.exists' => "product with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|numeric|exists:shop,id",
-                "productId" => "required|numeric|exists:product,id",
+                "shopId" => "required|numeric|exists:tbl_shop,id",
+                "productId" => "required|numeric|exists:tbl_product,id",
                 "qty" => "required|numeric",
                 "weight" => "required",
             ]
@@ -294,7 +294,7 @@ class CartService
                 'orderId.exists' => "order with provided id doesn\'t exist",
             ],
             [
-                "orderId" => "required|numeric|exists:order,id",
+                "orderId" => "required|numeric|exists:tbl_order,id",
             ]
         );
 
@@ -465,8 +465,8 @@ class CartService
                 'productId.exists' => "product with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|numeric|exists:shop,id",
-                "productId" => "required|numeric|exists:product,id",
+                "shopId" => "required|numeric|exists:tbl_shop,id",
+                "productId" => "required|numeric|exists:tbl_product,id",
                 "qty" => "required|numeric",
                 "weight" => "required",
             ]
@@ -881,8 +881,8 @@ class CartService
                 'productId.exists' => "product with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|numeric|exists:shop,id",
-                "productId" => "required|numeric|exists:product,id",
+                "shopId" => "required|numeric|exists:tbl_shop,id",
+                "productId" => "required|numeric|exists:tbl_product,id",
                 "weight" => "required",
             ]
         );

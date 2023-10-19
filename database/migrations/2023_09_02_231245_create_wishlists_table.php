@@ -12,14 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::create('wishlist', function (Blueprint $table) {
+        Schema::create('tbl_wishlist', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("product_id");
             $table->unsignedBigInteger("customer_id");
             $table->dateTime("date");
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
-            $table->foreign("product_id")->references("id")->on("product");
+            
+            $table->foreign("product_id")->references("id")->on("tbl_product");
             $table->foreign("customer_id")->references("id")->on("tbl_registration");
         });
         Schema::enableForeignKeyConstraints();
@@ -31,7 +30,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('wishlist');
+        Schema::dropIfExists('tbl_wishlist');
         Schema::enableForeignKeyConstraints();
     }
 };

@@ -13,7 +13,7 @@ class OfferBundingTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonFilePath = resource_path("../data/offer_bundling.json");
+        $jsonFilePath = resource_path("../data/tbl_offer_bundling.json");
         $jsonContent = File::get($jsonFilePath);
         $offerBundles = json_decode($jsonContent, true);
         OfferBundling::insert($offerBundles);

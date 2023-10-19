@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string("receive_remark")->nullable();
             $table->dateTime("receive_time")->nullable();
             $table->dateTime("datetime")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

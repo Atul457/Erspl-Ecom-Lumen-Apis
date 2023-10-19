@@ -26,11 +26,9 @@ class RatingService
             [
                 'numeric' => ':attribute must be a number',
                 'shopId.exists' => 'shop with provided id doesn\'t exist',
-                'userId.exists' => 'shop with provided id doesn\'t exist'
             ],
             [
-                "shopId" => "required|numeric|exists:shop,id",
-                "userId" => "required|numeric|exists:tbl_registration,id",
+                "shopId" => "required|numeric|exists:tbl_shop,id",
                 "orderId" => "required|numeric",
                 "rating" => "numeric",
                 "deliveryId" => "required|numeric",
@@ -38,7 +36,7 @@ class RatingService
             ]
         );
 
-        $userId = $data['userId'];
+        $userId = $req->user()->id;
         $shopId = $data['shopId'];
         $orderId = $data['orderId'];
         $rating = $data['rating'] ?? 0;

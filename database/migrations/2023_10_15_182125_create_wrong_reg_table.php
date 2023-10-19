@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('mobile', 50)->nullable();
             $table->string('platform', 50)->nullable();
             $table->dateTime('datetime')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

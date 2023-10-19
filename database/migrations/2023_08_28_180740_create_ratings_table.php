@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rating', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("shop_id")->nullable();
-            $table->unsignedBigInteger("user_id")->nullable();
-            $table->integer("order_id")->nullable();
-            $table->integer("delivery_boy_id")->nullable();
-            $table->integer("delivery_boy_rating")->nullable();
-            $table->string("rating")->nullable();
-            $table->string("review")->nullable();
-            $table->string("delivery_boy_review")->nullable();
-            $table->dateTime("date")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
-            $table->foreign("shop_id")->references("id")->on("shop");
+        Schema::create('tbl_rating', function (Blueprint $table) {
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('shop_id')->nullable();
+            $table->integer('order_id')->nullable();
+            $table->integer('delivery_boy_id')->nullable();
+            $table->string('delivery_boy_rating', 11)->nullable();
+            $table->string('rating', 11)->default('0');
+            $table->string('review', 255)->nullable();
+            $table->string('delivery_boy_review', 255)->nullable();
+            $table->datetime('date')->nullable();
+            
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
             $table->foreign("user_id")->references("id")->on("tbl_registration");
         });
     }
@@ -34,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rating');
+        Schema::dropIfExists('tbl_rating');
     }
 };

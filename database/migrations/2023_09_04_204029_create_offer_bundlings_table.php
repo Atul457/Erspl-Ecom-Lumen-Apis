@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('offer_bundling', function (Blueprint $table) {
-            $table->id();
-            $table->integer("primary_unique_id")->nullable();
-            $table->integer("offer_unique_id")->nullable();
-            $table->integer("offer_amount")->nullable();
-            $table->string("description")->nullable()->default("");
-            $table->integer("status")->nullable()->default(0);
-            $table->dateTime("created_date")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+        Schema::create('tbl_offer_bundling', function (Blueprint $table) {
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->integer('primary_unique_id')->nullable();
+            $table->integer('offer_unique_id')->nullable();
+            $table->integer('offer_amount')->nullable();
+            $table->text('description');
+            $table->integer('status')->default(0);
+            $table->datetime('created_date')->nullable();
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('offer_bundling');
+        Schema::dropIfExists('tbl_offer_bundling');
     }
 };

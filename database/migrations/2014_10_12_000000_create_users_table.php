@@ -15,13 +15,13 @@ return new class extends Migration
     {
         Schema::create('tbl_registration', function (Blueprint $table) {
             $table->id();
-            $table->text('token_id')->nullable();
+            $table->text('token_id');
             $table->string('login_token', 20)->nullable();
             $table->string('reg_type', 255)->nullable();
             $table->string('first_name', 255)->nullable();
             $table->string('middle_name', 255)->nullable();
             $table->string('last_name', 255)->nullable();
-            $table->text('image')->nullable();
+            $table->text('image');
             $table->string('mobile', 255)->nullable();
             $table->string('alt_mobile', 15)->nullable();
             $table->string('email', 255)->nullable();
@@ -37,14 +37,11 @@ return new class extends Migration
             $table->integer('referral_status')->default(0);
             $table->dateTime('suspended_datetime')->nullable();
             $table->string('wallet_balance', 50)->nullable();
-            $table->text('tInfo_temp')->nullable();
+            $table->text('tInfo_temp');
             $table->integer('guest_status')->default(0);
             $table->string('device_id', 100)->nullable();
             $table->integer('status')->default(0)->comment('0 = verification pending, 1 = verified user');
             $table->date('date')->nullable();
-            $table->rememberToken();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

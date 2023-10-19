@@ -11,18 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shop_time', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("shop_id")->nullable();
-            $table->string("day")->nullable();
-            $table->time("time_from")->nullable();
-            $table->time("time_to")->nullable();
-            $table->integer("status")->nullable();
-            $table->string("day_order")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+        Schema::create('tbl_shop_time', function (Blueprint $table) {
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->unsignedBigInteger('shop_id')->nullable();
+            $table->string('day', 255)->nullable();
+            $table->time('time_from')->nullable();
+            $table->time('time_to')->nullable();
+            $table->integer('status')->nullable();
+            $table->string('day_order', 11)->nullable();
 
-            $table->foreign("shop_id")->references("id")->on("shop");
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
 
         });
     }
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shop_time');
+        Schema::dropIfExists('tbl_shop_time');
     }
 };

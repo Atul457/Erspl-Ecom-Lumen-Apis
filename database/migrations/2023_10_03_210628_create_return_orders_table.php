@@ -49,13 +49,11 @@ return new class extends Migration
             $table->string('return_cancel_remark', 255)->nullable();
             $table->dateTime('return_cancel_date')->nullable();
             $table->dateTime('datetime')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
 
             $table->foreign("deliveryboy_id")->references("id")->on("tbl_employee");
-            $table->foreign("shop_id")->references("id")->on("shop");
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
             $table->foreign('customer_id')->references('id')->on('tbl_registration');
-            $table->foreign("product_id")->references("id")->on("product");
+            $table->foreign("product_id")->references("id")->on("tbl_product");
 
         });
     }

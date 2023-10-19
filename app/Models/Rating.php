@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rating extends Model
 {
-    protected $table = "rating"; 
+    protected $table = "tbl_rating"; 
+    public $timestamps = false; // This disables created_at and updated_at columns
 
     /**
      * The attributes that are mass assignable.

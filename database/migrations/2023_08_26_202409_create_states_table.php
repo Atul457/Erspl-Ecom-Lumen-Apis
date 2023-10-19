@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('state', function (Blueprint $table) {
+        Schema::create('tbl_state', function (Blueprint $table) {
             $table->id();
             $table->string("name");
             $table->string("code")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
         });
     }
 
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('state');
+        Schema::dropIfExists('tbl_state');
     }
 };

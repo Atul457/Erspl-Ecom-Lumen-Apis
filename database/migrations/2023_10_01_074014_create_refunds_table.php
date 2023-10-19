@@ -35,8 +35,6 @@ return new class extends Migration
             $table->dateTime('datetime')->nullable();
             $table->string('reason', 255)->nullable();
             $table->integer('status')->default(0);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
 
             $table->foreign('customer_id')->references('id')->on('tbl_registration');
 

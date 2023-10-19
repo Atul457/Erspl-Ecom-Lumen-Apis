@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('slider', function (Blueprint $table) {
-            $table->id();
-            $table->string("title")->nullable();
-            $table->string("sub_title")->nullable();
-            $table->string("slider")->nullable();
-            $table->unsignedBigInteger("shop_id")->nullable();
-            $table->string("link")->nullable();
-            $table->integer("sort_order")->nullable();
-            $table->integer("status")->nullable()->default(1);
-            $table->unsignedBigInteger("created_by")->nullable();
-            $table->dateTime("datetime")->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
-            $table->foreign("shop_id")->references("id")->on("shop");
+        Schema::create('tbl_slider', function (Blueprint $table) {
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->string('title', 255)->nullable();
+            $table->string('sub_title', 255)->nullable();
+            $table->string('slider', 255)->nullable();
+            $table->unsignedBigInteger('shop_id')->nullable();
+            $table->string('link', 255)->nullable();
+            $table->integer('sort_order')->nullable();
+            $table->integer('status')->default(1);
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->datetime('datetime')->nullable();
+
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
             $table->foreign("created_by")->references("id")->on("tbl_registration");
         });
     }
@@ -35,7 +34,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('slider');
+        Schema::dropIfExists('tbl_slider');
         Schema::enableForeignKeyConstraints();
     }
 };

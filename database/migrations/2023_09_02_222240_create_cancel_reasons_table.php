@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string("name")->nullable();
             $table->integer("type")->nullable()->comment("1=user 2=shop 3=deliveryboy");
             $table->integer("status")->nullable()->default(1);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
         });
     }
 

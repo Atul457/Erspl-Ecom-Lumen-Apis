@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class State extends Model
 {
-    protected $table = "state";
+    protected $table = "tbl_state";
+    public $timestamps = false; // This disables created_at and updated_at columns
 }

@@ -30,7 +30,7 @@ class OfferPriceBundlingService
                 'shopId.exists' => "shop with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|numeric|exists:shop,id",
+                "shopId" => "required|numeric|exists:tbl_shop,id",
                 "cartTotal" => "required|numeric",
             ]
         );
@@ -484,8 +484,8 @@ class OfferPriceBundlingService
                 'productId.exists' => "product with provided id doesn\'t exist",
             ],
             [
-                "shopId" => "required|numeric|exists:shop,id",
-                "productId" => "required|numeric|exists:product,id",
+                "shopId" => "required|numeric|exists:tbl_shop,id",
+                "productId" => "required|numeric|exists:tbl_product,id",
             ]
         );
 

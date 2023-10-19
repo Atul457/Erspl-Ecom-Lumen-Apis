@@ -12,26 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tbl_acategory', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->default("");
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
             $table->unsignedBigInteger('industries_id')->nullable();
-            $table->longText('offer_title')->nullable();
-            $table->longText('icon')->nullable();
-            $table->longText('catlog')->nullable();
-            $table->string('image')->nullable();
-            $table->string('photo')->nullable();
-            $table->string('category_code')->nullable();
-            $table->integer('category_order')->nullable(); 
-            $table->integer('status')->nullable()->default(1);
-            $table->longText('meta_title')->nullable();
-            $table->longText('meta_description')->nullable();
-            $table->longText('meta_keywords')->nullable();
-            $table->longText('slug_url')->nullable();
-            $table->longText('slider')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
-            
-            $table->foreign('industries_id')->references('id')->on('industries');
+            $table->string('category_code', 255)->nullable();
+            $table->string('name', 255);
+            $table->text('offer_title');
+            $table->text('icon');
+            $table->text('catlog');
+            $table->string('image', 255)->nullable();
+            $table->string('photo', 255)->nullable();
+            $table->integer('category_order')->nullable();
+            $table->integer('status')->default(1);
+            $table->text('meta_title');
+            $table->text('meta_description');
+            $table->text('meta_keywords');
+            $table->text('slug_url');
+            $table->text('slider');
+
+            $table->foreign('industries_id')->references('id')->on('tbl_industries');
         });
     }
 

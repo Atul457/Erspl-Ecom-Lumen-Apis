@@ -355,9 +355,6 @@ class RegistrationService
         unset($profileData["attempt"]);
         unset($profileData["password"]);
         unset($profileData["reg_type"]);
-        unset($profileData["created_at"]);
-        unset($profileData["created_at"]);
-        unset($profileData["updated_at"]);
         unset($profileData["otp_datetime"]);
         unset($profileData["tInfo_temp"]);
         unset($profileData["suspended_datetime"]);

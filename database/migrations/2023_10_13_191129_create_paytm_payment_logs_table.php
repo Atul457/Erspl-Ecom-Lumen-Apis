@@ -20,8 +20,7 @@ return new class extends Migration
             $table->string('amount', 11)->nullable();
             $table->date('order_date')->nullable();
             $table->datetime('datetime')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            
             $table->foreign('customer_id')->references('id')->on('tbl_registration');
         });
     }

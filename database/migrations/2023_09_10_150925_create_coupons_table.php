@@ -12,34 +12,31 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tbl_coupon', function (Blueprint $table) {
-            $table->id();
-            $table->text("coupon_title")->nullable()->default("");
-            $table->text("coupon_subtitle")->nullable()->default("");
-            $table->integer("status")->nullable()->comment("0 = Inactive, 1 = Active");
-            $table->string("couponcode")->nullable();
-            $table->dateTime("start_date")->nullable();
-            $table->dateTime("expire_date")->nullable();
-            $table->integer("times_used_coupon")->nullable()->comment("0=UNLIMITED 1=LIMITED");
-            $table->integer("time_to_use_coupon")->nullable();
-            $table->integer("times_used")->nullable()->comment("0=UNLIMITED 1=LIMITED");
-            $table->integer("time_to_use")->nullable();
-            $table->float("discount")->nullable();
-            $table->integer("discount_type")->nullable()->comment("0 = PERSENT, 1 = RUPEES");
-            $table->string("minimum_value")->nullable();
-            $table->string("discount_upto")->nullable();
-            $table->unsignedBigInteger("user_id")->nullable();
-            $table->integer("apply_type")->nullable()->comment("0 = ANY ITEMS, 1 = SELECTED ITEM");
-            $table->unsignedBigInteger("category_id")->nullable();
-            $table->string("subcategory_id")->nullable();
-            $table->unsignedBigInteger("product_id")->nullable();
-            $table->dateTime("created_date")->nullable();
-
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->text('coupon_title');
+            $table->text('coupon_subtitle');
+            $table->integer('status')->nullable()->comment('0 = Inactive, 1 = Active');
+            $table->string('couponcode', 255)->nullable();
+            $table->datetime('start_date')->nullable();
+            $table->datetime('expire_date')->nullable();
+            $table->integer('times_used_coupon')->nullable()->comment('0=UNLIMITED 1=LIMITED');
+            $table->integer('time_to_use_coupon')->nullable();
+            $table->integer('times_used')->nullable()->comment('0 = UNLIMITED, 1 = LIMITED');
+            $table->integer('time_to_use')->nullable();
+            $table->float('discount', 10, 2)->nullable();
+            $table->integer('discount_type')->nullable()->comment('0 = PERCENT, 1 = RUPEES');
+            $table->string('minimum_value', 50)->nullable();
+            $table->string('discount_upto', 11)->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->integer('apply_type')->nullable()->comment('0 = ANY ITEMS, 1 = SELECTED ITEM');
+            $table->unsignedBigInteger('category_id')->nullable();
+            $table->string('subcategory_id', 255)->nullable();
+            $table->unsignedBigInteger('product_id')->nullable();
+            $table->datetime('created_date');
 
             $table->foreign('user_id')->references('id')->on('tbl_registration');
             $table->foreign('category_id')->references('id')->on('tbl_acategory');
-            $table->foreign('product_id')->references('id')->on('product');
+            $table->foreign('product_id')->references('id')->on('tbl_product');
 
         });
     }

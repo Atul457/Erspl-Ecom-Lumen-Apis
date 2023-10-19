@@ -14,11 +14,9 @@ class CreateSliderProductsTable extends Migration
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->string('unique_code', 50)->nullable();
             $table->integer('sort_order')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
 
-            $table->foreign("shop_id")->references("id")->on("shop");
-            $table->foreign("slider_id")->references("id")->on("slider");
+            $table->foreign("shop_id")->references("id")->on("tbl_shop");
+            $table->foreign("slider_id")->references("id")->on("tbl_slider");
         });
     }
 

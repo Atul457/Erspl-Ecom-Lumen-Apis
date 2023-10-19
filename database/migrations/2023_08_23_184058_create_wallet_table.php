@@ -13,25 +13,22 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('wallet', function (Blueprint $table) {
-            $table->id();
+        Schema::create('tbl_wallet', function (Blueprint $table) {
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
             $table->unsignedBigInteger('customer_id')->nullable();
-            $table->string('order_reference')->nullable();
-            $table->string('order_id')->nullable();
-            $table->string('invoice_id')->nullable();
-            $table->float('amount')->nullable();
-            $table->text('remark')->nullable();
-            $table->string('payment_status')->nullable()->comment("1=credit 2=debit");
-            $table->string('referral_code')->nullable();
-            $table->string('referral_by')->nullable();
-            $table->string('txn_id')->nullable();
-            $table->dateTime('txn_date')->nullable();
-            $table->string('payment_mode')->nullable();
-            $table->dateTime('date')->nullable();
-            $table->integer('status')->nullable();
-            
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->string('order_reference', 50)->nullable();
+            $table->string('order_id', 50)->nullable();
+            $table->string('invoice_id', 50)->nullable();
+            $table->float('amount', 10, 2)->nullable();
+            $table->text('remark');
+            $table->string('payment_status', 11)->nullable()->comment('1=credit 2=debit');
+            $table->string('referral_code', 20)->nullable();
+            $table->string('referral_by', 20)->nullable();
+            $table->string('txn_id', 255)->nullable();
+            $table->datetime('txn_date')->nullable();
+            $table->string('payment_mode', 255)->nullable();
+            $table->datetime('date')->nullable();
+            $table->integer('status')->default(0);
 
             $table->foreign('customer_id')->references('id')->on('tbl_registration');
         });
@@ -44,6 +41,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('wallet');
+        Schema::dropIfExists('tbl_wallet');
     }
 };

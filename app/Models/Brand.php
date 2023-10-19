@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class Brand extends Model
 {
     protected $table = "tbl_brand";
+    public $timestamps = false; // This disables created_at and updated_at columns
 }

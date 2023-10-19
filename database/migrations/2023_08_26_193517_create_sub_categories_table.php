@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('scategory', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("parent_id");
-            $table->string("subcategory_code")->nullable();
-            $table->string("name");
-            $table->longText("slug_url")->nullable();
-            $table->string("image");
-            $table->integer("sub_order");
-            $table->longText("meta_title")->nullable();
-            $table->longText("meta_description")->nullable();
-            $table->longText("meta_keywords")->nullable();
-            $table->integer("status")->nullable()->default(1);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+        Schema::create('tbl_scategory', function (Blueprint $table) {
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->unsignedBigInteger('parent_id');
+            $table->string('subcategory_code', 255)->nullable();
+            $table->string('name', 255);
+            $table->text('slug_url');
+            $table->string('image', 255);
+            $table->integer('sub_order');
+            $table->text('meta_title');
+            $table->text('meta_description');
+            $table->text('meta_keywords');
+            $table->integer('status')->default(1);
+
             $table->foreign('parent_id')->references('id')->on('tbl_acategory');
         });
     }
@@ -34,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('scategory');
+        Schema::dropIfExists('tbl_scategory');
     }
 };

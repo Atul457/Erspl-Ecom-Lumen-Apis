@@ -46,7 +46,7 @@ class AddressBookService
                 "mobile" => "digits:10",
                 'city' => 'string|min:1',
                 'longitude' => 'numeric',
-                'name' => 'string|min:2',
+                'name' => 'required|string|min:2',
                 'address_type' => 'in:1,2,3',
                 'address' => 'string|min:1',
                 'address_id' => 'numeric',
@@ -202,6 +202,7 @@ class AddressBookService
                 ->update([
                     "default_status" => 0
                 ]);
+
             if (!$updated)
                 throw ExceptionHelper::error();
         }

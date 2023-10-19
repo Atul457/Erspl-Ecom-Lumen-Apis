@@ -12,15 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tbl_notification', function (Blueprint $table) {
-            $table->id();
-            $table->string("title")->nullable();
-            $table->string("description")->nullable();
-            $table->string("image")->nullable();
-            $table->integer("app_id")->nullable()->comment("1=eRSPL 2=CEO 3=STAR");
-            $table->dateTime("date")->nullable();
-            $table->integer("status")->nullable()->default(1);
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->id(); // This will automatically create an 'id' column with auto-incrementing.
+            $table->string('title', 255)->nullable();
+            $table->string('description', 255)->nullable();
+            $table->string('image', 255)->nullable();
+            $table->integer('app_id')->nullable()->comment('1=eRSPL 2=CEO 3=STAR');
+            $table->datetime('date')->nullable();
+            $table->integer('status')->default(1);
         });
     }
 
