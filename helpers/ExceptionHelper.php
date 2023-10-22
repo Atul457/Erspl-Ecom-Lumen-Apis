@@ -33,12 +33,13 @@ class ExceptionHelper extends Exception
      */
     public static function somethingWentWrong(array $errorInfo = [])
     {
-        return new ExceptionHelper([
-            "status" => false,
-            "data"  => $errorInfo["data"] ?? null,
-            "statusCode" => StatusCodes::INTERNAL_SERVER_ERROR,
-            "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again",
-        ]);
+        return new ExceptionHelper(
+            ResponseGenerator::generateErrorResponse([
+                "statusCode" => StatusCodes::INTERNAL_SERVER_ERROR,
+                "data"  => $errorInfo["data"] ?? null,
+                "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again"
+            ])
+        );
     }
 
 
@@ -48,12 +49,13 @@ class ExceptionHelper extends Exception
      */
     public static function unAuthorized(array $errorInfo = [])
     {
-        return new ExceptionHelper([
-            "status" => false,
-            "data"  => $errorInfo["data"] ?? null,
-            "statusCode" => StatusCodes::UNAUTHORIZED,
-            "message" => $errorInfo["message"] ?? "Unauthorized",
-        ]);
+        return new ExceptionHelper(
+            ResponseGenerator::generateErrorResponse([
+                "data"  => $errorInfo["data"] ?? null,
+                "statusCode" => StatusCodes::UNAUTHORIZED,
+                "message" => $errorInfo["message"] ?? "Unauthorized",
+            ])
+        );
     }
 
 
@@ -63,12 +65,13 @@ class ExceptionHelper extends Exception
      */
     public static function notFound(array $errorInfo = [])
     {
-        return new ExceptionHelper([
-            "status" => false,
-            "statusCode" => StatusCodes::NOT_FOUND,
-            "data"  => $errorInfo["data"] ?? null,
-            "message" => $errorInfo["message"] ?? "Resource not found",
-        ]);
+        return new ExceptionHelper(
+            ResponseGenerator::generateErrorResponse([
+                "data"  => $errorInfo["data"] ?? null,
+                "statusCode" => StatusCodes::NOT_FOUND,
+                "message" => $errorInfo["message"] ?? "Resource not found",
+            ])
+        );
     }
 
 
@@ -78,12 +81,13 @@ class ExceptionHelper extends Exception
      */
     public static function alreadyExists(array $errorInfo = [])
     {
-        return new ExceptionHelper([
-            "status" => false,
-            "data"  => $errorInfo["data"] ?? null,
-            "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
-            "message" => $errorInfo["message"] ?? "Resource already exists",
-        ]);
+        return new ExceptionHelper(
+            ResponseGenerator::generateErrorResponse([
+                "data"  => $errorInfo["data"] ?? null,
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
+                "message" => $errorInfo["message"] ?? "Resource already exists",
+            ])
+        );
     }
 
 
@@ -93,27 +97,29 @@ class ExceptionHelper extends Exception
      */
     public static function unprocessable(array $errorInfo = [])
     {
-        return new ExceptionHelper([
-            "status" => false,
-            "data"  => $errorInfo["data"] ?? null,
-            "statusCode" => StatusCodes::VALIDATION_ERROR,
-            "message" => $errorInfo["message"] ?? "Unprocessable Entity",
-        ]);
+        return new ExceptionHelper(
+            ResponseGenerator::generateErrorResponse([
+                "data"  => $errorInfo["data"] ?? null,
+                "statusCode" => StatusCodes::VALIDATION_ERROR,
+                "message" => $errorInfo["message"] ?? "Unprocessable Entity",
+            ])
+        );
     }
 
 
-    
+
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     /**
      * @TODO Document this
      */
     public static function error(array $errorInfo = [])
     {
-        return new ExceptionHelper([
-            "status" => false,
-            "data"  => $errorInfo["data"] ?? null,
-            "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again",
-            "statusCode" => $errorInfo["statusCode"] ?? StatusCodes::INTERNAL_SERVER_ERROR,
-        ]);
+        return new ExceptionHelper(
+            ResponseGenerator::generateErrorResponse([
+                "statusCode" =>  $errorInfo["statusCode"] ?? StatusCodes::INTERNAL_SERVER_ERROR,
+                "data"  => $errorInfo["data"] ?? null,
+                "message" => $errorInfo["message"] ?? "Someting went Wrong. Try Again"
+            ])
+        );
     }
 }

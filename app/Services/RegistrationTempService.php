@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Registration;
 use App\Models\RegistrationTemp;
 use Illuminate\Support\Facades\Auth;
@@ -144,7 +145,7 @@ class RegistrationTempService
 
         if (!$user)
             throw ExceptionHelper::error([
-                "message" => "user not found with mobile: ".$whereQuery["mobile"].""
+                "message" => "user not found with mobile: " . $whereQuery["mobile"] . ""
             ]);
 
         $keysToHide = ['password'];
@@ -157,15 +158,12 @@ class RegistrationTempService
 
         $response["token"] = $token;
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $response,
                 "message" => "Logged in successfully.",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -202,15 +200,14 @@ class RegistrationTempService
             "otp" => $otp
         ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => null,
                 "status" =>  $updated ? true : false,
                 "statusCode" => $updated ? StatusCodes::OK : StatusCodes::INTERNAL_SERVER_ERROR,
-                "messsage" => $updated ? "OTP Sent Successfully." : "Something went wrong."
-            ],
-            "statusCode" => $updated ? StatusCodes::OK : StatusCodes::INTERNAL_SERVER_ERROR
-        ];
+                "message" => $updated ? "OTP Sent Successfully." : "Something went wrong."
+            ])
+        );
     }
 
 
@@ -283,16 +280,13 @@ class RegistrationTempService
 
         OTPHelper::sendOTP($data["otp"], $data["mobile"]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "otp" => $data["otp"]
                 ],
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "OTP Sent Successfully."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+                "message" => "OTP Sent Successfully."
+            ])
+        );
     }
 }

@@ -5,10 +5,8 @@ namespace App\Helpers;
 
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
-// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Http\Request;
 use Throwable;
 
 /**
@@ -57,7 +55,47 @@ class ErrorHandlerHelper
         if ($this->statusCode === StatusCodes::INTERNAL_SERVER_ERROR)
             $this->message = "something went wrong";
 
-        Log::error("\nFunction name: $this->functionName\nFile name: $this->fileName\nLine number: $this->lineNumber\nMessage: $this->originalMessage\nPayload: " . json_encode($this->payload) . "\nUser id: " . ($req?->user()?->id ?? null) . "\nResponse data: " . json_encode($this->data) . "\nError snap: $this->errorSnapshot\n\n");
+        ErrorHandlerHelper::logError([
+            "data" => $this->data,
+            "payload" => $this->payload,
+            "fileName" => $this->fileName,
+            "lineNumber" => $this->lineNumber,
+            "functionName" => $this->functionName,
+            "userId" => $req?->user()?->id ?? null,
+            "errorSnapshot" => $this->errorSnapshot,
+            "originalMessage" => $this->originalMessage,
+        ]);
+    }
+
+
+    /**
+     * Log an error message with detailed information.
+     *
+     * @param array $logDetails An associative array containing error log details:
+     * - 'functionName' (string): The name of the function where the error occurred.
+     * - 'fileName' (string): The name of the file where the error occurred.
+     * - 'lineNumber' (int): The line number where the error occurred.
+     * - 'originalMessage' (string): The original error message.
+     * - 'payload' (array): An array representing any payload or additional data related to the error.
+     * - 'userId' (int, optional): The ID of the user (if applicable).
+     * - 'response' (array): An array representing the response data.
+     * - 'errorSnapshot' (string): A snapshot or additional information about the error.
+     * @return void
+     */
+    public static function logError(array $logDetails)
+    {
+        Log::error(
+            "\nFunction name: " . ($logDetails['functionName'] ?? null) .
+            "\nFile name: " . ($logDetails['fileName'] ?? null) .
+            "\nLine number: " . ($logDetails['lineNumber'] ?? null) .
+            "\nMessage: " . ($logDetails['originalMessage'] ?? null) .
+            "\nPayload: " . json_encode($logDetails['payload'] ?? null) .
+            "\nUser id: " . ($logDetails['userId'] ?? null) .
+            "\nResponse data: " . json_encode($logDetails['data'] ?? null) .
+            "\nError snap: " . ($logDetails['errorSnapshot'] ?? null) .
+            "\n\n"
+        );
+        
     }
 
 

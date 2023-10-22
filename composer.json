@@ -26,7 +26,8 @@
             "App\\Constants\\": "constants/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "App\\Helpers\\": "helpers/"
+            "App\\Helpers\\": "helpers/",
+            "paytm\\paytmchecksum\\": "paytmchecksum/"
         }
     },
     "autoload-dev": {

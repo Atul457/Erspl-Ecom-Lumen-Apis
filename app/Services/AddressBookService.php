@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\AddressBook;
 use Illuminate\Http\Request;
 
@@ -73,15 +74,10 @@ class AddressBookService
                 ->first();
 
             if (!$addressIdBelongsToUser)
-                return [
-                    "response" => [
-                        "data" => null,
-                        "status" => false,
-                        "statusCode" => 400,
-                        "message" => "Address Not Added. Try Again",
-                    ],
-                    "statusCode" => StatusCodes::NOT_FOUND
-                ];
+                throw ExceptionHelper::error([
+                    "statusCode" => 400,
+                    "message" => "Address Not Added. Try Again",
+                ]);
 
             unset($dataToInsert["id"]);
             unset($dataToInsert["address_id"]);
@@ -91,15 +87,13 @@ class AddressBookService
                 ->update($dataToInsert);
 
             if ($updated)
-                return [
-                    "response" => [
-                        "data" => null,
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
-                        "message" => $message,
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
+                        "data" => [
+                            "message" => $message,
+                        ],
+                    ])
+                );
             else
                 throw ExceptionHelper::error();
         }
@@ -113,17 +107,14 @@ class AddressBookService
         if (!$insertedAddressId)
             throw ExceptionHelper::error();
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "addressId" => $insertedAddressId
                 ],
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
                 "message" => $message,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -161,15 +152,11 @@ class AddressBookService
                 "message" => "Address not found.",
             ]);
 
-        return [
-            "response" => [
-                "status" => true,
-                "message" => null,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $addresses,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -215,15 +202,11 @@ class AddressBookService
         if (!$updated)
             throw ExceptionHelper::error();
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Default address updated.",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -276,30 +259,22 @@ class AddressBookService
         $addressIdBelongsToUser = (bool)AddressBook::where($whereQuery)->first();
 
         if (!$addressIdBelongsToUser)
-            return [
-                "response" => [
-                    "data" => null,
-                    "status" => false,
-                    "statusCode" => StatusCodes::BAD_REQUEST,
-                    "message" => "Address Not Added. Try Again",
-                ],
-                "statusCode" => StatusCodes::BAD_REQUEST
-            ];
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::BAD_REQUEST,
+                "message" => "Address Not Added. Try Again",
+            ]);
 
         unset($data["id"]);
         unset($data["address_id"]);
         unset($data["customer_id"]);
+
         AddressBook::where($whereQuery)->update($data);
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => $message,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -315,24 +290,16 @@ class AddressBookService
 
         if ($addressBook) {
             $addressBook->delete();
-            return [
-                "response" => [
-                    "data" => null,
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "message" => "Address Deleted Successfully.",
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else
-            return [
-                "response" => [
-                    "data" => null,
-                    "status" => false,
-                    "statusCode" => StatusCodes::BAD_REQUEST,
-                    "message" => "Address Not Deleted. Try Again.",
-                ],
-                "statusCode" => StatusCodes::BAD_REQUEST
-            ];
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::BAD_REQUEST,
+                "message" => "Address Not Deleted. Try Again.",
+            ]);
     }
 }

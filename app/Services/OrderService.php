@@ -7,6 +7,7 @@ use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Helpers\UtilityHelper;
 use App\Models\Cart;
 use App\Models\Employee;
@@ -21,18 +22,16 @@ use App\Models\OrderDeliveryLogs;
 use App\Models\OrderEdited;
 use App\Models\OrderPrepaidTransaction;
 use App\Models\Product;
+use App\Models\Rating;
 use App\Models\Refund;
 use App\Models\Registration;
 use App\Models\ReturnOrder;
 use App\Models\SellerLeger;
 use App\Models\Shop;
-use App\Models\SubCategory;
 use App\Models\Wallet;
 use DateTime;
-use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use PhpParser\Node\Expr;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /**
@@ -66,7 +65,8 @@ class OrderService
         $count = $sqlOrder->count();
 
         if (!$count)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Order List Not Found."
             ]);
 
@@ -88,7 +88,8 @@ class OrderService
             $orderId = $data['order_id'];
 
             if (!$checkData)
-                throw ExceptionHelper::notFound([
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
                     "message" => "Product with order_id: $orderId not found"
                 ]);
 
@@ -105,7 +106,8 @@ class OrderService
                 $data1 = $sqlOrder1->first();
 
                 if (!$sqlOrder1)
-                    ExceptionHelper::notFound([
+                    ExceptionHelper::error([
+                        "statusCode" => StatusCodes::NOT_FOUND,
                         "message" => "order_edited item not found with order_id: $orderId and qty!=0"
                     ]);
 
@@ -151,7 +153,8 @@ class OrderService
                     ->first();
 
                 if (!$sqlOrder1)
-                    ExceptionHelper::notFound([
+                    ExceptionHelper::error([
+                        "statusCode" => StatusCodes::NOT_FOUND,
                         "message" => "order_edited item not found with order_id: $orderId and qty!=0"
                     ]);
 
@@ -195,18 +198,14 @@ class OrderService
             }
         }
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "orderStage" => $status,
                     "orderList" => $orderList,
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -229,7 +228,8 @@ class OrderService
         $count = $sqlOrder->count();
 
         if (!$count)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Order List Not Found."
             ]);
 
@@ -463,19 +463,15 @@ class OrderService
             );
         }
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "count" => $count,
                     "pageCount" => $pageCount,
                     "orderReferenceList" => $orderReferenceList,
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -513,11 +509,12 @@ class OrderService
         DB::statement('SET SESSION sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"');
 
         if (!$count)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "orders not found via order_id: $orderId and group_by('order_id')"
             ]);
 
-        $orderStage = array();
+        $orderStatus = null;
         $placedDate = "";
         $approveDate = "";
         $dispatchDate = "";
@@ -543,8 +540,8 @@ class OrderService
         else if ($data['status'] == 3)
             $orderStatus = 3;
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "placedDate" => $placedDate,
                     "approveDate" => $approveDate,
@@ -554,12 +551,8 @@ class OrderService
                     "dispatchDate" => $dispatchDate,
                     "orderStatus" => $data['order_id'],
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -589,7 +582,8 @@ class OrderService
         $count = $sqlOrder->count();
 
         if (!$count)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "orders not found via order_id: $orderId and group_by('order_id')"
             ]);
 
@@ -607,17 +601,13 @@ class OrderService
         $data = $sqlOrder[0];
         $orderStatus = $data['status'];
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "orderStatus" => $orderStatus,
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -748,7 +738,7 @@ class OrderService
                 ->first();
 
             if (!$sqlShopDdata)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "shop with id: " . $sqlCartData['shop_id'] . " not found"
                 ]);
 
@@ -807,7 +797,8 @@ class OrderService
                             ->first();
 
                         if (!$sqlHsnCode)
-                            ExceptionHelper::notFound([
+                            ExceptionHelper::error([
+                                "statusCode" => StatusCodes::NOT_FOUND,
                                 "message" => "hsn_code item not found with hsn_code: " . $sqlProductData['hsn_code'] . ""
                             ]);
 
@@ -863,7 +854,7 @@ class OrderService
                                 ->first();
 
                             if (!$primaryIdData)
-                                throw ExceptionHelper::somethingWentWrong([
+                                throw ExceptionHelper::error([
                                     "message" => "product not found with unique_code: " . $offerBundleData['primary_unique_id'] . ", shop_id: " . $offerBundleData['shop_id'] . " and status = 1"
                                 ]);
 
@@ -881,7 +872,7 @@ class OrderService
                                 ->first();
 
                             if (!$primaryQtyData)
-                                throw ExceptionHelper::somethingWentWrong([
+                                throw ExceptionHelper::error([
                                     "message" => "cart not found with product_id: " . $primaryIdData['id'] . ", shop_id: " . $sqlCartData['shop_id'] . " and user_id = " . $userId . ""
                                 ]);
 
@@ -1066,8 +1057,8 @@ class OrderService
 
                 $sqlReferral = Registration::select("referral_by", "referral_code")
                     ->where("id", $userId)
-                    ->where("referral_by", "!=", "");
-                // ->where("referral_status", "0");
+                    ->where("referral_by", "!=", "")
+                    ->where("referral_status", "0");
 
                 if ($sqlReferral->count())
                     Order::where("order_reference", $order_reference)
@@ -1195,7 +1186,8 @@ class OrderService
             Order::where("order_reference", $order_reference)
                 ->delete();
 
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Order Not Placed. Try Again."
             ]);
         }
@@ -1257,8 +1249,8 @@ class OrderService
             }
         }
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "orderId" => $order_reference,
                     "orderTotal" => $orderTotal,
@@ -1272,12 +1264,9 @@ class OrderService
                     "mobile" => $mobile,
                     "date" => date('M d, Y', strtotime($currentDateTime))
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Order Saved Successfully."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+                "message" => "Order Saved Successfully."
+            ])
+        );
     }
 
 
@@ -1296,7 +1285,7 @@ class OrderService
             ],
             [
                 "orderId" => "required|numeric|exists:tbl_order,order_id",
-                "reasonId" => "numeric|exists:cancel_reason,id",
+                "reasonId" => "numeric|exists:tbl_cancel_reason,id",
                 "remark" => "string"
             ]
         );
@@ -1315,8 +1304,8 @@ class OrderService
         $data = $sql;
 
         if (!($data['status'] < 2))
-            throw ExceptionHelper::unAuthorized([
-                "status" => 400,
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::UNAUTHORIZED,
                 "message" => "Order Already Dispatched or Cancelled"
             ]);
 
@@ -1330,7 +1319,7 @@ class OrderService
             ]);
 
         if (!$sqlDelete)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "The order could be updated"
             ]);
 
@@ -1362,7 +1351,7 @@ class OrderService
             ->first();
 
         if (!$sqlTxn)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "prepaid transaction not found via order_id: $orderId"
             ]);
 
@@ -1376,7 +1365,7 @@ class OrderService
                 ->first();
 
             if (!$sqlOrderEdit)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "item not found in order edited table where order_id: $orderId"
                 ]);
 
@@ -1408,7 +1397,7 @@ class OrderService
                     ->first();
 
                 if (!$sqlEditTotal)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "item not found in order edited table where order_id: $orderId"
                     ]);
             }
@@ -1522,7 +1511,7 @@ class OrderService
                 $customerId = $data['customer_id'];
 
                 if (!$regData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" =>    "user with id: $customerId doesn't exists"
                     ]);
 
@@ -1553,7 +1542,7 @@ class OrderService
             ?->toArray();
 
         if (!$sqlTokenData)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "employee with id: $employeeId doesn't exists"
             ]);
 
@@ -1564,15 +1553,11 @@ class OrderService
             $sqlTokenData['token_id']
         );
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "data" => [],
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Order Cancelled.",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -1649,7 +1634,7 @@ class OrderService
             ]);
 
         if (!$sqlOrder1)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "unable to update order"
             ]);
 
@@ -1679,12 +1664,13 @@ class OrderService
         $title = "Order ID #" . $orderId . " Return Order Received";
         $body  = "Open the App to check the details";
 
-        $sqlToken = Employee::select("token_id")
+        $sqlToken = Employee::select("*")
             ->where("id", $deliveryBoyId);
+
         $sqlTokenData = $sqlToken->first()?->toArray();
 
         if (!$sqlTokenData)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "Employee not found in employee table via id=$deliveryBoyId"
             ]);
 
@@ -1699,15 +1685,11 @@ class OrderService
         $mobile = $sqlOrderData['mobile'];
         OTPHelper::sendOTP($otp, $mobile, $sqlOrderData['name']);
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Return Request Accepted",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -1744,15 +1726,21 @@ class OrderService
         $orderData = $sqlOrder->first()?->toArray();
 
         if (!$orderData)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "order with order_id: $orderId doesn't exists"
+            ]);
+
+        if (empty($orderData['delivered_date']))
+            throw ExceptionHelper::error([
+                "message" => "delivered_date is empty in row where order_id: $orderId"
             ]);
 
         $deliveredTime = date('Y-m-d H:i:s', strtotime($orderData['delivered_date']));
         $returnTime    = date('Y-m-d H:i:s', strtotime($deliveredTime . ' +1 days'));
 
         if (!($currentDate <= $returnTime))
-            throw ExceptionHelper::unAuthorized([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::UNAUTHORIZED,
                 "message" => "Return Window Is Closed"
             ]);
 
@@ -1844,7 +1832,7 @@ class OrderService
             }
 
             if (!$loop)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "Loop count is $loop"
                 ]);
 
@@ -1870,7 +1858,7 @@ class OrderService
                 ?->toArray();
 
             if (!$editTotalData)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "order where order_id: $orderId, status: 7 and offer_type=0 doesn't exists"
                 ]);
 
@@ -1888,7 +1876,7 @@ class OrderService
                     ?->toArray();
 
                 if (!$editTotalData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "order_edited row where order_id: $orderId, status: 7, qty != 0 and offer_type=0 doesn't exists"
                     ]);
             }
@@ -1916,15 +1904,11 @@ class OrderService
                 $orderData['shop_id']
             );
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
-                    "data" => [],
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "message" => "Return Request Submitted.",
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
 
             $sqlReturn =  Order::where('order_id', $orderId)
@@ -1938,7 +1922,7 @@ class OrderService
                 ]);
 
             if (!$sqlReturn)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "unable to update order where order_id: $orderId"
                 ]);
 
@@ -2022,7 +2006,7 @@ class OrderService
                 ?->toArray();
 
             if (!$sqlEditTotal)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "order row with id: $orderId and status: 7 doesn't exists"
                 ]);
 
@@ -2042,7 +2026,7 @@ class OrderService
                     ?->toArray();
 
                 if (!$editTotalData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "order_edited row where order_id: $orderId, status: 7, qty != 0 and offer_type=0 doesn't exists"
                     ]);
             }
@@ -2071,15 +2055,11 @@ class OrderService
                 $orderData['shop_id']
             );
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
-                    "data" => [],
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "message" => "Return Request Submitted.",
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         }
     }
 
@@ -2094,7 +2074,7 @@ class OrderService
             ],
             [
                 "referenceId" => "required|string",
-                "reasonId" => "numeric|exists:cancel_reason,id",
+                "reasonId" => "numeric|exists:tbl_cancel_reason,id",
                 "remark" => "string"
             ]
         );
@@ -2124,7 +2104,8 @@ class OrderService
         }
 
         if ($c !== 0)
-            throw ExceptionHelper::alreadyExists([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
                 "data" => [
                     "status" => 0
                 ],
@@ -2162,7 +2143,7 @@ class OrderService
             $orderId = $orderData['order_id'];
 
             if (!$txnData)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "prepaid transaction not found via order_id: $orderId"
                 ]);
 
@@ -2190,7 +2171,7 @@ class OrderService
                 $orderId = $orderData['order_id'];
 
                 if (!$txnData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "prepaid transaction not found via order_id: $orderId"
                     ]);
 
@@ -2220,7 +2201,7 @@ class OrderService
                 }
 
                 if (!$editTotalData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "order not found via order_id: $orderId"
                     ]);
 
@@ -2339,7 +2320,7 @@ class OrderService
                 $userId = $orderData['customer_id'];
 
                 if (!$registration)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "registration not found with id: $userId"
                     ]);
 
@@ -2381,7 +2362,7 @@ class OrderService
                     ?->toArray();
 
                 if (!$sqlTokenData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "employee with id: $employeeId doesn't exists"
                     ]);
 
@@ -2418,21 +2399,17 @@ class OrderService
                     "cancel_date" => $date
                 ]);
 
-
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "status" => 1
                     ],
                     "message" => "Order Cancelled",
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         }
 
-        throw ExceptionHelper::somethingWentWrong([
+        throw ExceptionHelper::error([
             "data" => [
                 "status" => 0
             ]
@@ -2461,7 +2438,7 @@ class OrderService
             ->where("order_id", $orderId);
 
         if (!$sqlOrder->count())
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "order with id: $orderId not found"
             ]);
 
@@ -2475,7 +2452,7 @@ class OrderService
             ]);
 
         if (!$sqlUpdate)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "unable to update order with id: $orderId"
             ]);
 
@@ -2574,15 +2551,11 @@ class OrderService
             }
         }
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "data" => [],
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Order edit confirmed.",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -2615,6 +2588,7 @@ class OrderService
         $paymentMode = $data['paymentMode'];
 
         $orderStatus = 0;
+
         if ($txnStatus == 'TXN_SUCCESS') {
             $paymentStatus = 1;
             $msg = 'Order Placed Successfully';
@@ -2690,7 +2664,7 @@ class OrderService
                 Cart::where('user_id', $userId)->delete();
 
                 UtilityHelper::disableSqlStrictMode();
-                
+
                 $sqlOrderShop = Order::select('order_date', 'shop_id', 'shop_city_id', 'order_id')
                     ->where('order_reference', $orderId)
                     ->groupBy('shop_id')
@@ -2809,17 +2783,893 @@ class OrderService
             } else if ($paymentStatus == 0) {
                 Cart::where('user_id', $userId)->delete();
             }
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "paymentStatus" => $paymentStatus
                     ],
                     "message" => $msg,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
+        }
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function orderDetail(Request $req)
+    {
+        $data = RequestValidator::validate(
+            $req->input(),
+            [],
+            [
+                "orderId" => "required|exists:tbl_order,order_id"
+            ]
+        );
+
+        $orderId = $data['orderId'];
+
+        $order = Order::where('order_id', $orderId)
+            ->first()
+            ->toArray();
+
+        $checkData = $order;
+
+        $approveButton = 0;
+        $returnProduct = 0;
+        $returnTotal = 0;
+        $returnStage = 0;
+        $returnStatus = 0;
+        $refundAmount = "";
+        $refundStatus = "0";
+        $refundDate = "";
+        $extraStatus = "0";
+        $orderTotal = 0.00;
+        $mrpTotal = 0.00;
+        $returnAble = 1;
+        $edit = 0;
+
+        if ($order && $order["edit_status"] == 1) {
+
+            $sqlOrder = OrderEdited::where('order_id', $orderId)
+                ->get()
+                ->toArray();
+
+            $count = count($sqlOrder);
+
+            if ($count > 0) {
+
+                $sqlHome = Home::get()->toArray();
+                $sqlHomeData = $sqlHome[0];
+
+                $data = $sqlOrder[0];
+
+                $sqlOrder1 = OrderEdited::where('order_id', $orderId)
+                    ->get()
+                    ->toArray();
+
+                foreach ($sqlOrder1 as $sqlOrderData) {
+                    if ($sqlOrderData['status'] == 7) {
+                        $returnProduct = 1;
+                        $returnStatus = 1;
+                        $returnStage  = $sqlOrderData['return_status'];
+                        $returnTotal  = $sqlOrderData['refund_amount'];
+                    } else {
+                        $returnProduct = 0;
+                    }
+
+                    if ($sqlOrderData['return_status'] == 3 && $sqlOrderData['status'] == 7) {
+                        $refundAmount = $sqlOrderData['refund_amount'];
+                        $refundStatus = $sqlOrderData['refund_status'];
+                        $refundDate   = $sqlOrderData['refund_date'];
+                    }
+
+                    $shopId = $sqlOrderData['shop_id'];
+
+                    $sqlEditCheck = Order::select('id', 'qty', 'price')
+                        ->where('product_id', $sqlOrderData['product_id'])
+                        ->where('order_id', $orderId)
+                        ->first()
+                        ?->toArray();
+
+                    if (!$sqlEditCheck)
+                        throw ExceptionHelper::error([
+                            "message" => "order row where product_id: " . $sqlOrderData['product_id'] . ", order_id: $orderId not found"
+                        ]);
+
+                    $editCheckData = $sqlEditCheck;
+
+                    if ($editCheckData['qty'] != $sqlOrderData['qty']) {
+                        $editHead = "The " . CommonHelper::shopName($sqlOrderData['shop_id']) . " is running low on stock :(";
+                        $edit = 1;
+                    } else if ($editCheckData['price'] != $sqlOrderData['price']) {
+                        $editHead = "Hurray!! you got some more discounts";
+                        $edit = 1;
+                    } else {
+                        $editHead = "";
+                        $edit = 0;
+                    }
+
+                    $orgTotal = $editCheckData['price'] * $editCheckData['qty'];
+
+                    $sqlProductData = Product::select('*')
+                        ->where('id', $sqlOrderData['product_id'])
+                        ->first()
+                        ?->toArray();
+
+                    if (!$sqlProductData)
+                        throw ExceptionHelper::error([
+                            "message" => "product row where id: " . $sqlOrderData['product_id'] . " not found"
+                        ]);
+
+                    $productImage = "";
+                    $directory = '../products/' . $sqlProductData['barcode'] . '/';
+                    $partialName = '1.';
+                    $files = glob($directory . '*' . $partialName . '*');
+
+                    if ($files !== false) {
+                        foreach ($files as $file) {
+                            $productImage = basename($file);
+                        }
+                    } else {
+                        $productImage = "";
+                    }
+
+                    if ($sqlProductData['returnable'] == 0) {
+                        $returnAble = 0;
+                    }
+
+                    $primaryStatus = 1;
+
+                    if ($sqlOrderData['offer_id'] > 0) {
+                        $primaryStatus = 0;
+                    }
+
+                    $returnInformation = "";
+
+                    $offerBundleData = OfferBundling::select('*')
+                        ->where('primary_unique_id', $sqlProductData->unique_code)
+                        ->where('status', 1)
+                        ->first()
+                        ?->toArray();
+
+                    if ($offerBundleData) {
+                        $sqlShopProductData = DB::table('tbl_product')
+                            ->select('id', 'weight', 'price', 'sellingprice', 'unit_id')
+                            ->where('shop_id', $sqlOrderData['shop_id'])
+                            ->where('unique_code', $offerBundleData["offer_unique_id"])
+                            ->first();
+
+                        if ($sqlShopProductData) {
+                            $sqlOfferProductData = DB::table('tbl_order_edited')
+                                ->where('order_id', $orderId)
+                                ->where('product_id', $sqlShopProductData["product_id"])
+                                ->where('offer_id', '>', 0)
+                                ->first();
+
+                            if ($sqlOfferProductData) {
+                                $returnInformation = "{$sqlOrderData['qty']} X {$sqlOrderData['product_name']} {$sqlOrderData['weight']} will return with this product";
+                            }
+                        }
+                    }
+
+                    $shopTotalData = OrderEdited::select(DB::raw('SUM(total) as total_sum'))
+                        ->where('order_id', $orderId)
+                        ->where('offer_type', 0)
+                        ->first();
+
+                    if (!$shopTotalData)
+                        throw ExceptionHelper::error([
+                            "message" => "tbl_order_edited row where order_id: " . $orderId . " and offer_type: 0 not found"
+                        ]);
+
+                    if ($sqlOrderData['offer_type'] == 0 && $sqlOrderData['shop_discount'] > 0) {
+                        $price = ($sqlOrderData['shop_discount'] * $sqlOrderData['price']) / $shopTotalData->total_sum;
+                        $price = $sqlOrderData['price'] - $price;
+                    } elseif ($sqlOrderData['offer_type'] == 2) {
+                        $price = $sqlOrderData['price'] - $sqlOrderData['offer_total'];
+                    } else {
+                        $price = $sqlOrderData['price'];
+                    }
+
+                    $total = $sqlOrderData['qty'] * $price;
+                    $mrpTotal1 = $sqlOrderData['qty'] * $sqlOrderData['mrp'];
+
+                    $productList[] = [
+                        'productId' => $sqlOrderData['product_id'],
+                        'editHead' => $editHead,
+                        'product_name' => $sqlOrderData['qty'] . " x " . ucfirst(
+                            strtolower(
+                                mb_convert_encoding(
+                                    $sqlProductData['product_name'],
+                                    'UTF-8'
+                                )
+                            )
+                        ),
+                        'weight' => $sqlOrderData['weight'],
+                        'price' => sprintf('%0.2f', $price),
+                        'qty' => $sqlOrderData['qty'],
+                        'orgQty' => $editCheckData['qty'],
+                        'sellingprice' => sprintf('%0.2f', $sqlOrderData['mrp']),
+                        'total' => sprintf('%0.2f', $total),
+                        'orgTotal' => $orgTotal,
+                        'sellingtotal' => sprintf('%0.2f', $sqlOrderData['mrp'] * $sqlOrderData['qty']),
+                        'orgSellingtotal' => $mrpTotal1,
+                        'photo' => url("products") . "/" . $sqlOrderData['product_barcode'] . '/' . $productImage,
+                        "returnProduct" => $returnProduct,
+                        "returnable" => $sqlProductData['returnable'],
+                        'newEdit' => $edit,
+                        "primaryStatus" => $primaryStatus,
+                        "returnInformation" => $returnInformation,
+                    ];
+
+                    $mrpTotal += $sqlOrderData['qty'] * $sqlOrderData['mrp'];
+                    $orderTotal += $sqlOrderData['total'];
+                }
+
+                if ($data['expected_delivered_date'] != '') {
+                    $expected_delivered_date = date('d, M Y h:i A', strtotime($data['expected_delivered_date']));
+                } else {
+                    $expected_delivered_date = "";
+                }
+
+                if ($data['status'] == 5 || $data['status'] == 6) {
+                    $cancelReason = CommonHelper::cancelReason($data['reason_id']);
+                    $cancelRemark = $data['cancel_remark'];
+                    $cancelDate   = date('d, M Y h:i A', strtotime($data['cancel_date']));
+                } else if ($data['status'] == 8) {
+                    $cancelReason = CommonHelper::cancelReason($data['denial_reason_id']);
+                    $cancelRemark = $data['denial_remark'];
+                    $cancelDate   = date('d, M Y h:i A', strtotime($data['denial_date']));
+                } else {
+                    $cancelReason = "";
+                    $cancelRemark = "";
+                    $cancelDate   = "";
+                }
+
+                if ($checkData['payment_type'] == 'PREPAID') {
+
+                    $refundData = Refund::where('order_id', round($orderId));
+
+                    $refundCount = $refundData
+                        ->count();
+
+                    if ($checkData['status'] == 5 || $checkData['status'] == 6 || $checkData['status'] == 8) {
+                        if ($refundCount > 0) {
+
+                            $refundData = $refundData
+                                ->first()
+                                ->toArray();
+
+                            $refundTotalData = Refund::where('order_id', round($orderId))
+                                ->sum('refund_amount');
+
+                            $refundStatus = $refundData['status'];
+                            $refundDate   = $refundData['refund_date'];
+                            $refundAmount = $refundTotalData;
+                        } else {
+                            $refundStatus = "0";
+                            $refundDate   = "";
+                            $refundAmount = $checkData['refund_amount'];
+                        }
+                    } else {
+
+                        $originalTotalData = Order::where('order_id', $orderId)->sum('total');
+
+                        $originalAmount = $originalTotalData;
+                        $extraAmount = $originalAmount - $orderTotal;
+
+                        if ($extraAmount > 0 || $extraAmount < 0) {
+
+                            $extraStatus = "1";
+
+                            if ($refundCount > 0) {
+                                $refundStatus = "0";
+                                $refundDate   = $refundData['refund_date'];
+                                $refundAmount = $refundData['refund_amount'];
+                            } else {
+                                $refundStatus = "0";
+                                $refundDate   = "";
+                                $refundAmount = $extraAmount;
+                            }
+                        }
+
+                        if ($returnStatus == "1") {
+                            $refundTotalData = Refund::where('order_id', round($orderId))
+                                ->sum('refund_amount');
+
+                            if ($refundCount > 0) {
+                                $refundStatus = "1";
+                                $refundDate = $refundData->refund_date;
+                                $refundAmount = $refundTotalData;
+                            } else {
+                                $refundStatus = "0";
+                                $refundDate = "";
+                                $refundAmount = $returnTotal;
+                            }
+                        }
+                    }
+                }
+
+                if ($returnStatus == "1") {
+                    $refundTotal = Refund::where('order_id', round($orderId))->sum('refund_amount');
+
+                    if ($refundCount > 0) {
+                        $refundStatus = "1";
+                        $refundDate = $refundData['refund_date'];
+                        $refundAmount = $refundTotal;
+                    } else {
+                        $refundStatus = "0";
+                        $refundDate = "";
+                        $refundAmount = $returnTotal;
+                    }
+                }
+
+                if ($data['delivered_date'] != '') {
+                    $delivered_date = date('d, M Y h:i A', strtotime($data['delivered_date']));
+                } else {
+                    $delivered_date = "";
+                }
+
+                if ($data['shop_discount'] == NULL) {
+                    $discount = 0;
+                } else {
+                    $discount = $data['shop_discount'];
+                }
+
+                if ($data['offer_total'] == NULL) {
+                    $offerTotal = 0;
+                } else {
+                    $offerTotal = $data['offer_total'];
+                }
+
+                $gTotal = ($orderTotal + $data['delivery_charge']) - ($discount + $offerTotal);
+
+                $sqlShop = Shop::find($shopId)
+                    ?->toArray();
+
+                if (!$sqlShop)
+                    throw ExceptionHelper::error([
+                        "message" => "tbl_shop row where id: " . $shopId . " not found"
+                    ]);
+
+                $sqlDelivery = Employee::find($data['deliveryboy_id'])
+                    ?->toArray();;
+
+                if (!$sqlDelivery)
+                    throw ExceptionHelper::error([
+                        "message" => "tbl_employee row where id: " . $data['deliveryboy_id'] . " not found"
+                    ]);
+
+                $sqlRating = Rating::where('order_id', $orderId)
+                    ->first()
+                    ?->toArray();
+
+                if (!$sqlRating)
+                    throw ExceptionHelper::error([
+                        "message" => "tbl_employee row where order_id: " . $orderId . " not found"
+                    ]);
+
+                $sqlShopData = $sqlShop;
+                $sqlDeliveryData = $sqlDelivery;
+                $dataRating = $sqlRating;
+
+                if ($dataRating['rating'] == NULL) {
+                    $reviewStatus = '0';
+                } else {
+                    $reviewStatus = '1';
+                }
+                if ($dataRating['rating'] == NULL) {
+                    $rating = '0.0';
+                } else {
+                    $rating = $dataRating['rating'];
+                }
+                if ($dataRating['delivery_boy_rating'] == NULL) {
+                    $deliveryrating = '0.0';
+                } else {
+                    $deliveryrating = $dataRating['delivery_boy_rating'];
+                }
+                if ($dataRating['review'] == NULL) {
+                    $review = "";
+                } else {
+                    $review = $dataRating['review'];
+                }
+                if ($dataRating['delivery_boy_review'] == NULL) {
+                    $deliveryReview = "";
+                } else {
+                    $deliveryReview = $dataRating['delivery_boy_review'];
+                }
+
+                if ($data['status'] == 3) {
+                    $orderTime    = date('Y-m-d H:i:s', strtotime($data['date']));
+                    $deliverTime  = date('Y-m-d H:i:s', strtotime($data['delivered_date']));
+                    $start_datetime = new DateTime($orderTime);
+                    $diff = $start_datetime->diff(new DateTime($deliverTime));
+
+                    $deliveryTime = $diff->i;
+                } else {
+                    $deliveryTime = 0;
+                }
+
+                $savings = $mrpTotal - $orderTotal;
+                $savings = $savings + $discount + $offerTotal;
+                $orderTotal = $orderTotal;
+
+                if ($checkData['edit_confirm'] == 0) {
+                    $approveButton = 1;
+                }
+
+                if ($data['status'] == 3) {
+                    $deliveredTime = date('Y-m-d H:i:s', strtotime($data['delivered_date']));
+                    $returnTime    = date('Y-m-d H:i:s', strtotime($deliveredTime . ' +1 days'));
+                    $currentTime   = date('Y-m-d H:i:s');
+                    if ($currentTime <= $returnTime) {
+                        $returnButton = 1;
+                    } else {
+                        $returnButton = 0;
+                    }
+                } else {
+                    $returnButton = 0;
+                }
+
+                $productDiscount = $mrpTotal - $orderTotal;
+
+                $arr = array(
+                    "deliveryTime" => $deliveryTime,
+                    "pCount" => $count,
+                    "order_id" => str_pad($data['order_id'], 4, "0", STR_PAD_LEFT),
+                    "otp" => $checkData['otp'],
+                    "orderStatus" => $data['status'],
+                    "order_date" => date('d M, Y h:i A', strtotime($data['date'])),
+                    "expected_delivered_date" => $expected_delivered_date,
+                    "delivered_date" => $delivered_date,
+                    "shop_id" => $shopId,
+                    "shopName" => CommonHelper::shopName($shopId),
+                    "shopMobile" => $sqlShopData['mobile'],
+                    "shopAddress" => CommonHelper::shopAddress($shopId),
+                    "shopLat" => $sqlShopData['latitude'],
+                    "shopLong" => $sqlShopData['longitude'],
+                    "customer_name" => $data['name'],
+                    "mobile" => $data['mobile'],
+                    "address" => $data['flat'] . ", " . $data['landmark'],
+                    "latitude" => $data['latitude'],
+                    "longitude" => $data['longitude'],
+                    "address_type" => $data['address_type'],
+                    "payment_type" => $data['payment_type'],
+                    "order_status" => $data['status'],
+                    "order_total" => sprintf('%0.2f', $mrpTotal),
+                    "productDiscount" => sprintf('%0.2f', $productDiscount),
+                    "delivery_charge" => round($data['delivery_charge']),
+                    "coupon" => $data['coupon'],
+                    "discount_amount" => sprintf('%0.2f', $discount),
+                    "offerTotal" => round($offerTotal),
+                    "gTotal" => sprintf('%0.2f', $gTotal),
+                    "productlist" => $productList,
+                    "rating" => $rating,
+                    "deliveryId" => $data['deliveryboy_id'],
+                    "deliveryrating" => $deliveryrating,
+                    "review" => $review,
+                    "deliveryreview" => $deliveryReview,
+                    "reviewStatus" => $reviewStatus,
+                    "contactSupport" => $sqlHomeData['contact'],
+                    "delivery_type" => $data['delivery_type'],
+                    "delivery_name" => $sqlDeliveryData['name'],
+                    "delivery_mobile" => $sqlDeliveryData['mobile'],
+                    "delivery_lat" => $sqlDeliveryData['latitude'],
+                    "delivery_long" => $sqlDeliveryData['longitude'],
+                    "cancelReason" => $cancelReason,
+                    "cancelRemark" => $cancelRemark,
+                    "cancelDate" => $cancelDate,
+                    "returnStage" => $returnStage,
+                    "returnStatus" => $returnStatus,
+                    "returnTotal" => $returnTotal,
+                    "savings" => sprintf('%0.2f', $savings),
+                    "otp" => $data['otp'],
+                    "originalStatus" => 1,
+                    "approveButton" => $approveButton,
+                    "returnAble" => $returnAble,
+                    "refundStatus" => $refundStatus,
+                    "refundAmount" => $refundAmount,
+                    "refundDate" => $refundDate,
+                    "invoiceDisplay" => "0",
+                    "extraStatus" => $extraStatus,
+                    "returnButton" => $returnButton
+                );
+
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
+                        "data" => $arr,
+                    ])
+                );
+            } else
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
+                    "message" => "Order Detail Not Found."
+                ]);
+        } else {
+
+            $sqlOrder = Order::where('order_id', $orderId);
+            $count = $sqlOrder->count();
+
+            if ($count > 0) {
+
+                $homeData = Home::first();
+                $sqlHomeData = $homeData->toArray();
+
+                $data = $sqlOrder
+                    ->first()
+                    ->toArray();
+
+                $sqlOrder1 = Order::where('order_id', $orderId)
+                    ->get()
+                    ->toArray();
+
+                foreach ($sqlOrder1 as $sqlOrderData) {
+
+                    if ($sqlOrderData['status'] == 7) {
+                        $returnProduct = 1;
+                        $returnStatus = "1";
+                        $returnStage  = $sqlOrderData['return_status'];
+                        $returnTotal  = $sqlOrderData['refund_amount'];
+                    } else {
+                        $returnProduct = 0;
+                    }
+
+                    if ($sqlOrderData['return_status'] == 3 && $sqlOrderData['status'] == 7) {
+                        $refundAmount = $sqlOrderData['refund_amount'];
+                        $refundStatus = $sqlOrderData['refund_status'];
+                        $refundDate   = $sqlOrderData['refund_date'];
+                    }
+
+                    $shopId = $sqlOrderData['shop_id'];
+
+                    $sqlProduct = Product::select('*')
+                        ->where('id', $sqlOrderData['product_id'])
+                        ->first()
+                        ?->toArray();
+
+                    $sqlProductData = $sqlProduct;
+
+                    if (!$sqlProductData)
+                        throw ExceptionHelper::error([
+                            "message" => "product row where id: " . $sqlOrderData['product_id'] . " not found"
+                        ]);
+
+                    $productImage = "";
+                    $directory = '../products/' . $sqlProductData['barcode'] . '/';
+                    $partialName = '1.';
+                    $files = glob($directory . '*' . $partialName . '*');
+
+                    if ($files !== false) {
+                        foreach ($files as $file) {
+                            $productImage = basename($file);
+                        }
+                    } else {
+                        $productImage = "";
+                    }
+                    if ($sqlProductData['returnable'] == 0) {
+                        $returnAble = 0;
+                    }
+
+                    $primaryStatus = 1;
+                    if ($sqlOrderData['offer_id'] > 0) {
+                        $primaryStatus = 0;
+                    }
+
+                    $returnInformation = "";
+
+                    $offerBundleData = OfferBundling::where('primary_unique_id', $sqlProductData['unique_code'])
+                        ->where('status', 1)
+                        ->first()
+                        ?->toArray();
+
+                    if ($offerBundleData) {
+                        $sqlShopProductData = Product::select('id', 'weight', 'price', 'sellingprice', 'unit_id')
+                            ->where('shop_id', $sqlOrderData['shop_id'])
+                            ->where('unique_code', $offerBundleData["offer_unique_id"])
+                            ->first();
+
+                        if ($sqlShopProductData) {
+                            $sqlOfferProductData = Order::where('order_id', $orderId)
+                                ->where('product_id', $sqlShopProductData["product_id"])
+                                ->where('offer_id', '>', 0)
+                                ->first();
+
+                            if ($sqlOfferProductData) {
+                                $returnInformation = $sqlOrderData['qty'] . " X " . $sqlOrderData['product_name'] . " " . $sqlOrderData['weight'] . " will return with this product";
+                            }
+                        }
+                    }
+
+                    $shopTotal = Order::where('order_id', $orderId)
+                        ->where('offer_type', 0)
+                        ->sum('total');
+
+                    if ($sqlOrderData['offer_type'] == 0 && $sqlOrderData['shop_discount'] > 0) {
+                        $price = ($sqlOrderData['shop_discount'] * $sqlOrderData['price']) / $shopTotal;
+                        $price = number_format($sqlOrderData['price'] - $price, 2);
+                    } elseif ($sqlOrderData['offer_type'] == 2) {
+                        $price = $sqlOrderData['price'] - $sqlOrderData['offer_total'];
+                    } else {
+                        $price = $sqlOrderData['price'];
+                    }
+
+                    $total = $sqlOrderData['qty'] * $price;
+                    $mrpTotal1 = $sqlOrderData['qty'] * $sqlOrderData['mrp'];
+
+                    $productList[]  = array(
+                        'productId' => $sqlOrderData['product_id'],
+                        'product_name' => $sqlOrderData['qty'] . " x  " .  ucfirst(
+                            strtolower(
+                                mb_convert_encoding(
+                                    $sqlOrderData['product_name'],
+                                    'UTF-8'
+                                )
+                            )
+                        ),
+                        'weight' => $sqlOrderData['weight'],
+                        'price' => $price,
+                        'sellingprice' => sprintf('%0.2f',     $sqlOrderData['mrp']),
+                        'qty' => $sqlOrderData['qty'],
+                        'total' => sprintf('%0.2f',     $total),
+                        'sellingtotal' => sprintf('%0.2f', $mrpTotal1),
+                        'photo' => url("products/") . "/" . $sqlOrderData['product_barcode'] . '/' . $productImage,
+                        "returnProduct" => $returnProduct,
+                        "returnable" => $sqlProductData['returnable'],
+                        'newEdit' => $edit,
+                        "primaryStatus" => $primaryStatus,
+                        "returnInformation" => $returnInformation
+                    );
+
+                    $mrpTotal = $mrpTotal + ($sqlOrderData['qty'] * $sqlOrderData['mrp']);
+                    $orderTotal = $orderTotal + $sqlOrderData['total'];
+                }
+
+                if ($data['expected_delivered_date'] != '') {
+                    $expected_delivered_date = date('d, M Y h:i A', strtotime($data['expected_delivered_date']));
+                } else {
+                    $expected_delivered_date = "";
+                }
+
+                if ($data['status'] == 5 || $data['status'] == 6) {
+                    $cancelReason = CommonHelper::cancelReason($data['reason_id']);
+                    $cancelRemark = $data['cancel_remark'];
+                    $cancelDate   = date('d, M Y h:i A', strtotime($data['cancel_date']));
+                } else if ($data['status'] == 8) {
+                    $cancelReason = CommonHelper::cancelReason($data['denial_reason_id']);
+                    $cancelRemark = $data['denial_remark'];
+                    $cancelDate   = date('d, M Y h:i A', strtotime($data['denial_date']));
+                } else {
+                    $cancelReason = "";
+                    $cancelRemark = "";
+                    $cancelDate   = "";
+                }
+
+                $sqlRefund = Refund::where('order_id', round($orderId));
+
+                $refundData = $sqlRefund
+                    ->first()
+                    ?->toArray();
+
+                if ($checkData['payment_type'] == 'PREPAID') {
+
+                    if ($checkData['status'] == 5 || $checkData['status'] == 6 || $checkData['status'] == 8) {
+                        if ($sqlRefund->count() > 0) {
+
+                            $refundTotal = DB::table('tbl_refund')
+                                ->where('order_id', round($orderId))
+                                ->sum('refund_amount');
+
+                            $refundTotalData = Refund::where('order_id', round($orderId))
+                                ->sum('refund_amount');
+
+                            $refundStatus = $refundData['status'];
+                            $refundDate   = $refundData['refund_date'];
+                            $refundAmount = $refundTotalData;
+                        } else {
+                            $refundStatus = "0";
+                            $refundDate   = "";
+                            $refundAmount = $checkData['refund_amount'];
+                        }
+                    }
+
+                    $extraAmount = "0";
+                }
+
+                if ($returnStatus == "1") {
+                    if ($sqlRefund->count() > 0) {
+                        $refundStatus = "0";
+                        $refundDate   = $refundData['refund_date'];
+                        $refundAmount = $refundData['refund_amount'];
+                    } else {
+                        $refundStatus = "0";
+                        $refundDate   = "";
+                        $refundAmount = $returnTotal;
+                    }
+                }
+
+                if ($data['delivered_date'] != '') {
+                    $delivered_date = date('d, M Y h:i A', strtotime($data['delivered_date']));
+                } else {
+                    $delivered_date = "";
+                }
+
+                if ($data['shop_discount'] == NULL) {
+                    $discount = 0;
+                } else {
+                    $discount = $data['shop_discount'];
+                }
+
+                if ($data['offer_total'] == NULL) {
+                    $offerTotal = 0;
+                } else {
+                    $offerTotal = $data['offer_total'];
+                }
+
+                $gTotal = ($orderTotal + $data['delivery_charge']) - $discount - $offerTotal;
+
+                $sqlShop = Shop::find($shopId)
+                    ?->toArray();
+
+                if (!$sqlShop)
+                    throw ExceptionHelper::error([
+                        "message" => "tbl_shop row where id: " . $shopId . " not found"
+                    ]);
+
+                $sqlDelivery = Employee::find($data['deliveryboy_id'])
+                    ?->toArray();;
+
+                if (!$sqlDelivery)
+                    throw ExceptionHelper::error([
+                        "message" => "tbl_employee row where id: " . $data['deliveryboy_id'] . " not found"
+                    ]);
+
+                $sqlRating = Rating::where('order_id', $orderId)
+                    ->first()
+                    ?->toArray();
+
+                if (!$sqlRating)
+                    throw ExceptionHelper::error([
+                        "message" => "tbl_rating row where order_id: " . $orderId . " not found"
+                    ]);
+
+                $sqlShopData = $sqlShop;
+                $sqlDeliveryData = $sqlDelivery;
+                $dataRating = $sqlRating;
+
+                if ($dataRating['rating'] == NULL) {
+                    $reviewStatus = '0';
+                } else {
+                    $reviewStatus = '1';
+                }
+                if ($dataRating['rating'] == NULL) {
+                    $rating = "0.0";
+                } else {
+                    $rating = $dataRating['rating'];
+                }
+                if ($dataRating['delivery_boy_rating'] == NULL) {
+                    $deliveryrating = "0.0";
+                } else {
+                    $deliveryrating = $dataRating['delivery_boy_rating'];
+                }
+                if ($dataRating['review'] == NULL) {
+                    $review = "";
+                } else {
+                    $review = $dataRating['delivery_boy_review'];
+                }
+                if ($dataRating['delivery_boy_review'] == NULL) {
+                    $deliveryReview = "";
+                } else {
+                    $deliveryReview = $dataRating['delivery_boy_review'];
+                }
+
+
+                if ($data['status'] == 3) {
+                    $orderTime    = date('Y-m-d H:i:s', strtotime($data['date']));
+                    $deliverTime  = date('Y-m-d H:i:s', strtotime($data['delivered_date']));
+                    $start_datetime = new DateTime($orderTime);
+                    $diff = $start_datetime->diff(new DateTime($deliverTime));
+
+                    $deliveryTime = $diff->i;
+                } else {
+                    $deliveryTime = 0;
+                }
+
+                if ($data['status'] == 3) {
+                    $deliveredTime = date('Y-m-d H:i:s', strtotime($data['delivered_date']));
+                    $returnTime    = date('Y-m-d H:i:s', strtotime($deliveredTime . ' +1 days'));
+                    $currentTime   = date('Y-m-d H:i:s');
+                    if ($currentTime <= $returnTime) {
+                        $returnButton = 1;
+                    } else {
+                        $returnButton = 0;
+                    }
+                } else {
+                    $returnButton = 0;
+                }
+
+                $savings = $mrpTotal - $orderTotal;
+                $savings = $savings + $discount + $offerTotal;
+
+                $productDiscount = $mrpTotal - $orderTotal;
+
+                $productDiscount = $mrpTotal - $orderTotal;
+
+                $arr = array(
+                    "deliveryTime" => $deliveryTime,
+                    "pCount" => $count,
+                    "order_id" => str_pad($data['order_id'], 4, "0", STR_PAD_LEFT),
+                    "otp" => $checkData['otp'],
+                    "orderStatus" => $data['status'],
+                    "order_date" => date('d M, Y h:i A', strtotime($data['date'])),
+                    "expected_delivered_date" => $expected_delivered_date,
+                    "delivered_date" => $delivered_date,
+                    "shop_id" => $shopId,
+                    "shopName" => CommonHelper::shopName($shopId),
+                    "shopMobile" => $sqlShopData['mobile'],
+                    "shopAddress" => CommonHelper::shopAddress($shopId),
+                    "shopLat" => $sqlShopData['latitude'],
+                    "shopLong" => $sqlShopData['longitude'],
+                    "customer_name" => $data['name'],
+                    "mobile" => $data['mobile'],
+                    "address" => $data['flat'] . ", " . $data['landmark'],
+                    "latitude" => $data['latitude'],
+                    "longitude" => $data['longitude'],
+                    "address_type" => $data['address_type'],
+                    "payment_type" => $data['payment_type'],
+                    "order_status" => $data['status'],
+                    "order_total" => sprintf('%0.2f', $mrpTotal),
+                    "productDiscount" => sprintf('%0.2f', $productDiscount),
+                    "delivery_charge" => round($data['delivery_charge']),
+                    "coupon" => $data['coupon'],
+                    "discount_amount" => sprintf('%0.2f', $discount),
+                    "offerTotal" => round($offerTotal),
+                    "gTotal" => sprintf('%0.2f', $gTotal),
+                    "productlist" => $productList,
+                    "rating" => $rating,
+                    "deliveryId" => $data['deliveryboy_id'],
+                    "deliveryrating" => $deliveryrating,
+                    "review" => $review,
+                    "deliveryreview" => $deliveryReview,
+                    "reviewStatus" => $reviewStatus,
+                    "contactSupport" => $sqlHomeData['contact'],
+                    "delivery_type" => $data['delivery_type'],
+                    "delivery_name" => $sqlDeliveryData['name'],
+                    "delivery_mobile" => $sqlDeliveryData['mobile'],
+                    "delivery_lat" => $sqlDeliveryData['latitude'],
+                    "delivery_long" => $sqlDeliveryData['longitude'],
+                    "cancelReason" => $cancelReason,
+                    "cancelRemark" => $cancelRemark,
+                    "cancelDate" => $cancelDate,
+                    "returnStage" => $returnStage,
+                    "returnStatus" => $returnStatus,
+                    "returnTotal" => $returnTotal,
+                    "savings" => sprintf('%0.2f', $savings),
+                    "otp" => $data['otp'],
+                    "originalStatus" => 0,
+                    "approveButton" => $approveButton,
+                    "returnAble" => $returnAble,
+                    "refundStatus" => $refundStatus,
+                    "refundAmount" => $refundAmount,
+                    "refundDate" => $refundDate,
+                    "invoiceDisplay" => "0",
+                    "returnButton" => $returnButton
+                );
+
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
+                        "data" => $arr,
+                    ])
+                );
+            } else
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
+                    "message" => "Order Detail Not Found."
+                ]);
         }
     }
 }

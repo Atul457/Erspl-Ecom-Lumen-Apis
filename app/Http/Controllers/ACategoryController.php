@@ -30,4 +30,16 @@ class ACategoryController extends Controller
         $res = $this->service->categoryList($req);
         return response($res["response"], $res["statusCode"]);
     }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @TODO Document this
+     */
+    public function searchCategoryList(Request $req)
+    {
+        $res = $this->service->searchCategoryList($req);
+        return response($res["response"], $res["statusCode"]);
+    }
 }

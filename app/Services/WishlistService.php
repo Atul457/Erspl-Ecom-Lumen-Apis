@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\Wishlist;
@@ -98,21 +99,18 @@ class WishlistService
         }
 
         if (!$wishCount)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Wishlist Empty."
             ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "productlist" => $productlist
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -145,7 +143,8 @@ class WishlistService
         ])->exists();
 
         if ($alreadyInWishlist)
-            throw ExceptionHelper::alreadyExists([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
                 "message" => "Already in wishlist."
             ]);
 
@@ -156,19 +155,16 @@ class WishlistService
         ]);
 
         if (!$inserted)
-            throw ExceptionHelper::alreadyExists([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
                 "message" => "Something went wrong. Try Again."
             ]);
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Added To Wishlist."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
+                "message" => "Added To Wishlist."
+            ])
+        );
     }
 
 
@@ -200,7 +196,8 @@ class WishlistService
         ])->exists();
 
         if (!$wishlistExists)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Not in wishlist."
             ]);
 
@@ -210,18 +207,15 @@ class WishlistService
         ])->delete();
 
         if (!$deleted)
-            throw ExceptionHelper::alreadyExists([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
                 "message" => "Something went wrong. Try Again."
             ]);
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Removed From Wishlist."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
+                "message" => "Removed From Wishlist."
+            ])
+        );
     }
 }

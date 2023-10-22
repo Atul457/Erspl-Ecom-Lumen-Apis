@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Cart;
 use App\Models\OfferPriceBundling;
 use App\Models\Product;
@@ -338,18 +339,14 @@ class OfferPriceBundlingService
         }
 
         if ($offer > 0) {
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "offerList" => $offerList,
                         "notAvailCount" => $notAvailCount
                     ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
             throw ExceptionHelper::error([
                 "statusCode" => StatusCodes::NOT_FOUND,
@@ -396,7 +393,7 @@ class OfferPriceBundlingService
                     ?->toArray();
 
                 if ($productData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "product row not found where unique_code: $uniqueCode"
                     ]);
 
@@ -450,17 +447,13 @@ class OfferPriceBundlingService
                 );
             }
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "offerList" => $offerList
                     ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         }
 
         throw ExceptionHelper::error([
@@ -512,15 +505,11 @@ class OfferPriceBundlingService
             ]);
 
             if ($sql) {
-                return [
-                    "response" => [
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
-                        "data" => [],
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "message" => "Offer Applied",
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
                 throw ExceptionHelper::error([
                     "message" => "Unable to add item to cart table"
@@ -542,15 +531,11 @@ class OfferPriceBundlingService
                 ]);
 
             if ($sql) {
-                return [
-                    "response" => [
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
-                        "data" => [],
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "message" => "Offer Applied",
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
                 throw ExceptionHelper::error([
                     "message" => "Unable to update cart row where user_id: $userId, shop_id: $shopId and product_id: $productId"

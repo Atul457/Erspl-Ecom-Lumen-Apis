@@ -58,11 +58,31 @@ class CommonHelper
         if ($shop)
             $shop = $shop->toArray();
         else
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "Shop with id:" . $shopId . " not found"
             ]);
 
         return $shop['name'] ?? "";
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public static function shopAddress(int $shopId)
+    {
+        $shop = Shop::where("id", $shopId)->first();
+
+        if ($shop)
+            $shop = $shop->toArray();
+        else
+            throw ExceptionHelper::error([
+                "Shop with id:" . $shopId . " not found"
+            ]);
+
+        return $shop['address'] ?? "";
     }
 
 
@@ -78,7 +98,7 @@ class CommonHelper
         if ($shop)
             $shop = $shop->toArray();
         else
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "Shop with id:" . $shopId . " not found"
             ]);
 
@@ -111,17 +131,15 @@ class CommonHelper
         );
 
         $fields = json_encode($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-        curl_exec($ch);
-        curl_close($ch);
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => "https://onesignal.com/api/v1/notifications",
+            "headers" => [
+                'Content-Type: application/json; charset=utf-8'
+            ],
+            "data" => $fields
+        ]);
     }
 
 
@@ -136,27 +154,29 @@ class CommonHelper
         $sqlHomeData = $sqlHome->toArray();
         $key = $sqlHomeData['notification_key'];
         $path_to_firebase_cm = 'https://fcm.googleapis.com/fcm/send';
+
         $fields = array(
             'to' => $registration_ids,
             "priority" => "high",
             'data' => $arrNotification
         );
+
         $headers = array(
             'Authorization:key=' . $key,
             'Content-Type:application/json'
         );
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $path_to_firebase_cm);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-        $result = curl_exec($ch);
-        curl_close($ch);
-        return $result;
+        $fields = json_encode($fields);
+
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => $path_to_firebase_cm,
+            "headers" =>  $headers,
+            "data" => $fields,
+            "additionalSetOptArray" => [
+                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
+            ]
+        ]);
     }
 
 
@@ -186,20 +206,15 @@ class CommonHelper
         $oneSignalAuthToken = env("ONE_SIGNAL_AUTH_TOKEN");
         $fields = json_encode($fields);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json; charset=utf-8',
-            "Authorization: Basic $oneSignalAuthToken"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        return $response;
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => "https://onesignal.com/api/v1/notifications",
+            "headers" =>  array(
+                'Content-Type: application/json; charset=utf-8',
+                "Authorization: Basic $oneSignalAuthToken"
+            ),
+            "data" => $fields,
+        ]);
     }
 
 
@@ -229,17 +244,13 @@ class CommonHelper
         );
 
         $fields = json_encode($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        return $response;
+
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => "https://onesignal.com/api/v1/notifications",
+            "headers" =>  array('Content-Type: application/json; charset=utf-8'),
+            "data" => $fields,
+        ]);
     }
 
 
@@ -313,18 +324,13 @@ class CommonHelper
         );
 
         $fields = json_encode($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-        $response = curl_exec($ch);
-        curl_close($ch);
-        return $response;
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => "https://onesignal.com/api/v1/notifications",
+            "headers" =>  array('Content-Type: application/json; charset=utf-8'),
+            "data" => $fields,
+        ]);
     }
 
 
@@ -359,17 +365,13 @@ class CommonHelper
         );
 
         $fields = json_encode($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-        curl_exec($ch);
-        curl_close($ch);
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => "https://onesignal.com/api/v1/notifications",
+            "headers" => array('Content-Type: application/json; charset=utf-8'),
+            "data" => $fields,
+        ]);
     }
 
 
@@ -400,16 +402,16 @@ class CommonHelper
         );
 
         $fields = json_encode($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json; charset=utf-8', 'Authorization: Basic NTczZTcwYzItMTY2ZC00MmIxLTkxZTYtODgzM2MwNjdkOWM4'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_POST, TRUE);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        $oneSignalAuthToken = env("ONE_SIGNAL_AUTH_TOKEN") ?? "";
 
-        curl_exec($ch);
-        curl_close($ch);
+        return CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => "https://onesignal.com/api/v1/notifications",
+            "headers" => array(
+                "Content-Type: application/json; charset=utf-8",
+                "Authorization: Basic $oneSignalAuthToken"
+            ),
+            "data" => $fields,
+        ]);
     }
 }

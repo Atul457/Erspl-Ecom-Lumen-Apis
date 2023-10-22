@@ -2,13 +2,18 @@
 
 namespace App\Services;
 
-use Paytm\PaytmChecksum\PaytmChecksum;
+use paytm\paytmchecksum\PaytmChecksum;
 use App\Constants\StatusCodes;
+use App\Helpers\CurlRequestHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
+use App\Helpers\UtilityHelper;
 use App\Models\Home;
 use App\Models\Order;
 use App\Models\PaytmPaymentLog;
 use Illuminate\Http\Request;
+
+// H:\work\projects\ecom-lumen\vendor\paytm\paytmchecksum\paytmchecksum\PaytmChecksum.php
 
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,15 +38,11 @@ class PaytmService
             'industry_type' => 'Retail'
         );
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $config,
-                "message" => null,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -65,6 +66,8 @@ class PaytmService
         $date = date('Y-m-d');
         $currentDate = date('Y-m-d H:i:s');
 
+        UtilityHelper::disableSqlStrictMode();
+
         $sqlOrderTotal = Order::select("order_total")
             ->where("order_reference", $referenceId)
             ->groupBy("order_reference");
@@ -72,6 +75,8 @@ class PaytmService
         $orderTotalData = $sqlOrderTotal
             ->first()
             ?->toArray();
+
+        UtilityHelper::enableSqlStrictMode();
 
         $paymentLog = new PaytmPaymentLog();
         $paymentLog->order_reference = $referenceId;
@@ -108,46 +113,42 @@ class PaytmService
 
         $checksum = PaytmChecksum::generateSignature(
             json_encode($paytmParams, JSON_UNESCAPED_SLASHES),
-            "your_merchant_key"
+            $mkey
         );
 
         $paytmParams['head'] = array('signature' => $checksum);
         $post_data = json_encode($paytmParams, JSON_UNESCAPED_SLASHES);
         $url = "https://securegw-stage.paytm.in/theia/api/v1/initiateTransaction?mid=$mid&orderId=$orderid";
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        $result = curl_exec($ch);
-        curl_close($ch);
+        $result = CurlRequestHelper::sendRequest([
+            "method" => "POST",
+            "url" => $url,
+            "headers" => [
+                'Content-Type: application/json'
+            ],
+            "data" => $post_data,
+            "additionalSetOptArray" => [
+                CURLOPT_FOLLOWLOCATION => 1
+            ]
+        ]);
 
-        $response = json_decode($result);
+        $response = json_decode($result["response"]);
+
         $data = array(
             'amount' => $orderTotalData['order_total'],
-            'txn' => $response->body->txnToken,
+            'txn' => $response?->body?->txnToken ?? null,
             'orderid' => $orderid,
             'isStaging' => "true",
             'mid' => $mid,
             'checksum' => $checksum,
             "callbackUrl" => "https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderid"
         );
-        $txn_id = $response->body->txnToken;
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "data" => [
-                    "data" => $data
-                ],
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
+                "data" => $data,
                 "message" => "Tranaction token created",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 }

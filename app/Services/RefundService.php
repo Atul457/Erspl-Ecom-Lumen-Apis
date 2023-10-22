@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Refund;
 use Laravel\Lumen\Http\Request;
 
@@ -62,19 +63,17 @@ class RefundService
         }
 
         if ($count > 0) {
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "refundList" => $refundList
                     ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
-            throw ExceptionHelper::error();
+            throw ExceptionHelper::error([
+                "message" => "tbl_refund row not found where order_id: $orderId"
+            ]);
         }
     }
 }

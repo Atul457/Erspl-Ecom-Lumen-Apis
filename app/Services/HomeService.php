@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Helpers\UtilityHelper;
 use App\Models\AddressBook;
 use App\Models\Cart;
@@ -214,15 +215,13 @@ class HomeService
                 }
 
                 if ($loop > 0) {
-                    return [
-                        "response" => [
-                            "status" => true,
-                            "statusCode" => StatusCodes::OK,
-                            "data" => $shopList,
-                            "message" => null,
-                        ],
-                        "statusCode" => StatusCodes::OK
-                    ];
+                    return ResponseGenerator::generateResponseWithStatusCode(
+                        ResponseGenerator::generateSuccessResponse([
+                            "data" => [
+                                "shopList" => $shopList
+                            ],
+                        ])
+                    );
                 } else
                     throw ExceptionHelper::error([
                         "statusCode" => StatusCodes::NOT_FOUND,
@@ -375,15 +374,13 @@ class HomeService
                 }
 
                 if ($loop > 0) {
-                    return [
-                        "response" => [
-                            "status" => true,
-                            "statusCode" => StatusCodes::OK,
-                            "data" => $shopList,
-                            "message" => null,
-                        ],
-                        "statusCode" => StatusCodes::OK
-                    ];
+                    return ResponseGenerator::generateResponseWithStatusCode(
+                        ResponseGenerator::generateSuccessResponse([
+                            "data" => [
+                                "shopList" => $shopList
+                            ],
+                        ])
+                    );
                 } else
                     throw ExceptionHelper::error([
                         "statusCode" => StatusCodes::NOT_FOUND,
@@ -650,19 +647,14 @@ class HomeService
                     }
 
                     if ($loop > 0) {
-
-                        return [
-                            "response" => [
-                                "status" => true,
-                                "statusCode" => StatusCodes::OK,
+                        return ResponseGenerator::generateResponseWithStatusCode(
+                            ResponseGenerator::generateSuccessResponse([
                                 "data" => [
                                     "count" => $count . " Product(s) Found",
                                     "productList" => $productlist
                                 ],
-                                "message" => null,
-                            ],
-                            "statusCode" => StatusCodes::OK
-                        ];
+                            ])
+                        );
                     } else {
                         throw ExceptionHelper::error([
                             "statusCode" => StatusCodes::NOT_FOUND,
@@ -778,19 +770,14 @@ class HomeService
                             $loop++;
 
                             if ($loop > 0) {
-
-                                return [
-                                    "response" => [
-                                        "status" => true,
-                                        "statusCode" => StatusCodes::OK,
+                                return ResponseGenerator::generateResponseWithStatusCode(
+                                    ResponseGenerator::generateSuccessResponse([
                                         "data" => [
                                             "count" => $count . " Product(s) Found",
                                             "productList" => $productlist
                                         ],
-                                        "message" => null,
-                                    ],
-                                    "statusCode" => StatusCodes::OK
-                                ];
+                                    ])
+                                );
                             } else {
                                 throw ExceptionHelper::error([
                                     "statusCode" => StatusCodes::NOT_FOUND,

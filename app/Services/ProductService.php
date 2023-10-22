@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Cart;
 use App\Models\OfferBundling;
 use App\Models\OfferPriceBundling;
@@ -57,7 +58,8 @@ class ProductService
             ->toArray();
 
         if (!count($distinctSubCategories))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Sub Category List Not Found."
             ]);
 
@@ -79,17 +81,13 @@ class ProductService
             array_multisort($columns, SORT_DESC, $subCategoryList);
         }
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "subCategoryList" => $subCategoryList
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -119,7 +117,8 @@ class ProductService
         $categoryId = $req->input("categoryId") ?? "";
 
         if (empty($search))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Product Not Found."
             ]);
 
@@ -145,7 +144,8 @@ class ProductService
             ->toArray();
 
         if (!count($sqlProduct))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Product Not Found."
             ]);
 
@@ -233,17 +233,13 @@ class ProductService
             );
         }
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "productlist" => $productlist
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -522,10 +518,8 @@ class ProductService
                 $priceOffer = "0";
             }
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => array(
                         "productId" => $sqlProductData['id'],
                         "shopId" => $sqlProductData['shop_id'],
@@ -553,10 +547,8 @@ class ProductService
                         "unit" => $unitList,
                         "similarProductList" => $productlist
                     ),
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
             throw ExceptionHelper::error([
                 "message" => "Product Detail Not Found."
@@ -693,17 +685,13 @@ class ProductService
                     );
                 }
 
-                return [
-                    "response" => [
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "data" => [
                             "similarProductList" => $similarProductList
                         ],
-                        "message" => null,
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
                 throw ExceptionHelper::error([
                     "statusCode" => StatusCodes::NOT_FOUND,

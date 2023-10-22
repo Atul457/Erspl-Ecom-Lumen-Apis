@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Registration;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
@@ -51,15 +52,13 @@ class WalletService
         } else
             $status = true;
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $data_,
                 "status" => $status,
-                "statusCode" => StatusCodes::OK,
                 "message" => $message,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -95,21 +94,18 @@ class WalletService
         $resultCount = count($referralList);
 
         if ($resultCount === 0)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "list not found."
             ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "referralList" => $referralList
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -145,21 +141,18 @@ class WalletService
         ]);
 
         if (!$inserted)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "Something went wrong. Try Again"
             ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "orderId" => round($invoiceId)
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Request Received"
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+                "message" => "Request Received"
+            ])
+        );
     }
 
 
@@ -209,18 +202,14 @@ class WalletService
                 );
             }
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "walletList" => $walletList,
                         "walletBalance" => round($balance)
-                    ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                    ]
+                ])
+            );
         } else {
             throw ExceptionHelper::error([
                 "statusCode" => StatusCodes::NOT_FOUND,
@@ -299,15 +288,11 @@ class WalletService
                         ]);
                 }
 
-                return [
-                    "response" => [
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
-                        "data" => [],
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "message" => $msg,
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
                 throw ExceptionHelper::error([
                     "message" => "Unable to update tbl_wallet row where invoid_id: $orderId"

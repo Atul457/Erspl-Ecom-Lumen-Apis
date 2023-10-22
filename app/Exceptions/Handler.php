@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Helpers\ErrorHandlerHelper;
+use App\Helpers\ResponseGenerator;
 use Exception;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -53,15 +54,13 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         $errorHelperInstance = new ErrorHandlerHelper($request, $exception);
-        $errorHelperInstance =  [
-            "statusCode" => $errorHelperInstance->statusCode,
-            "response" => [
+        $errorHelperInstance =  ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateErrorResponse([
                 "data" => $errorHelperInstance->data,
-                "status" => $errorHelperInstance->status,
                 "message" => $errorHelperInstance->message,
                 "statusCode" => $errorHelperInstance->statusCode,
-            ]
-        ];
+            ])
+        );
 
         return response(
             $errorHelperInstance["response"],

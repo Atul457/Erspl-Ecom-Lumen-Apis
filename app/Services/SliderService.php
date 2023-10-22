@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Helpers\UtilityHelper;
 use App\Models\Home;
 use App\Models\HsnCode;
@@ -40,21 +41,18 @@ class SliderService
             ->toArray();
 
         if (!count($sliderList))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Slider list not found."
             ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "sliderList" => $sliderList
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -152,17 +150,13 @@ class SliderService
             }
 
             if ($loop > 0) {
-                return [
-                    "response" => [
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "data" => [
                             "bannerList" => $bannerList
                         ],
-                        "message" => null,
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
                 throw ExceptionHelper::error([
                     "statusCode" => StatusCodes::NOT_FOUND,
@@ -355,10 +349,8 @@ class SliderService
                 }
             }
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "bannerImage" => url("slider") . "slider/" . $bannerData['slider'],
                         "bannerTitle" => $bannerData['title'],
@@ -367,10 +359,8 @@ class SliderService
                         "shopName" => $sqlShopData['name'],
                         "productList" => $productlist
                     ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
             throw ExceptionHelper::error([
                 "statusCode" => StatusCodes::NOT_FOUND,

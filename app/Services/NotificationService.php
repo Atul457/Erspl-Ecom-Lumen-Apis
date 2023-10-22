@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use Illuminate\Http\Request;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
@@ -28,26 +29,13 @@ class NotificationService
             ->get()
             ->toArray();
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "notificationList" => $notificationList
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
-
-        return response([
-            "data" => [
-                "notificationList" => $notificationList
-            ],
-            "status" =>  true,
-            "statusCode" => StatusCodes::OK,
-            "messsage" => null
-        ], StatusCodes::OK);
+            ])
+        );
     }
 
 
@@ -65,15 +53,11 @@ class NotificationService
 
         CommonHelper::ceoNewOrderNotification($title, $body, "001", $token);
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "data" => [],
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Done",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -99,14 +83,10 @@ class NotificationService
 
         CommonHelper::ceoNewOrderNotification2($title, $body, "001", $token);
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "data" => [],
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Done",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 }

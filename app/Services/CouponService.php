@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Coupon;
 use App\Models\Order;
 use Illuminate\Support\Facades\Date;
@@ -128,19 +129,16 @@ class CouponService
                                         $couponDiscount = $sqlCouponData['discount'];
                                     }
 
-                                    return [
-                                        "response" => [
-                                            "status" => true,
-                                            "statusCode" => StatusCodes::OK,
+                                    return ResponseGenerator::generateResponseWithStatusCode(
+                                        ResponseGenerator::generateSuccessResponse([
                                             "data" => [
                                                 "discount" => sprintf('%0.2f', $couponDiscount),
                                                 "code" => $coupon,
                                                 "couponDescription" => $offerDescrption
                                             ],
                                             "message" => "COUPON APPLIED.",
-                                        ],
-                                        "statusCode" => StatusCodes::OK
-                                    ];
+                                        ])
+                                    );
                                 } else {
                                     throw ExceptionHelper::error([
                                         "statusCode" => StatusCodes::BAD_REQUEST,
@@ -161,19 +159,16 @@ class CouponService
                                     $couponDiscount = $sqlCouponData['discount'];
                                 }
 
-                                return [
-                                    "response" => [
-                                        "status" => true,
-                                        "statusCode" => StatusCodes::OK,
+                                return ResponseGenerator::generateResponseWithStatusCode(
+                                    ResponseGenerator::generateSuccessResponse([
                                         "data" => [
                                             "discount" => sprintf('%0.2f', $couponDiscount),
                                             "code" => $coupon,
                                             "couponDescription" => $offerDescrption
                                         ],
                                         "message" => "COUPON APPLIED.",
-                                    ],
-                                    "statusCode" => StatusCodes::OK
-                                ];
+                                    ])
+                                );
                             } else {
                                 throw ExceptionHelper::error([
                                     "statusCode" => StatusCodes::BAD_REQUEST,
@@ -226,19 +221,16 @@ class CouponService
                                     $couponDiscount = $sqlCouponData['discount'];
                                 }
 
-                                return [
-                                    "response" => [
-                                        "status" => true,
-                                        "statusCode" => StatusCodes::OK,
+                                return ResponseGenerator::generateResponseWithStatusCode(
+                                    ResponseGenerator::generateSuccessResponse([
                                         "data" => [
                                             "discount" => sprintf('%0.2f', $couponDiscount),
                                             "code" => $coupon,
                                             "couponDescription" => $offerDescrption
                                         ],
                                         "message" => "COUPON APPLIED.",
-                                    ],
-                                    "statusCode" => StatusCodes::OK
-                                ];
+                                    ])
+                                );
                             } else {
                                 throw ExceptionHelper::error([
                                     "statusCode" => StatusCodes::BAD_REQUEST,
@@ -260,19 +252,16 @@ class CouponService
                                 $couponDiscount = $sqlCouponData['discount'];
                             }
 
-                            return [
-                                "response" => [
-                                    "status" => true,
-                                    "statusCode" => StatusCodes::OK,
+                            return ResponseGenerator::generateResponseWithStatusCode(
+                                ResponseGenerator::generateSuccessResponse([
                                     "data" => [
                                         "discount" => sprintf('%0.2f', $couponDiscount),
                                         "code" => $coupon,
                                         "couponDescription" => $offerDescrption
                                     ],
                                     "message" => "COUPON APPLIED.",
-                                ],
-                                "statusCode" => StatusCodes::OK
-                            ];
+                                ])
+                            );
                         } else {
                             throw ExceptionHelper::error([
                                 "statusCode" => StatusCodes::BAD_REQUEST,
@@ -341,19 +330,16 @@ class CouponService
                                 $couponDiscount = $sqlCouponData1['discount'];
                             }
 
-                            return [
-                                "response" => [
-                                    "status" => true,
-                                    "statusCode" => StatusCodes::OK,
+                            return ResponseGenerator::generateResponseWithStatusCode(
+                                ResponseGenerator::generateSuccessResponse([
                                     "data" => [
                                         "discount" => sprintf('%0.2f', $couponDiscount),
                                         "code" => $coupon,
                                         "couponDescription" => $offerDescrption
                                     ],
                                     "message" => "COUPON APPLIED.",
-                                ],
-                                "statusCode" => StatusCodes::OK
-                            ];
+                                ])
+                            );
                         } else {
                             throw ExceptionHelper::error([
                                 "statusCode" => StatusCodes::BAD_REQUEST,
@@ -374,19 +360,16 @@ class CouponService
                             $couponDiscount = $sqlCouponData1['discount'];
                         }
 
-                        return [
-                            "response" => [
-                                "status" => true,
-                                "statusCode" => StatusCodes::OK,
+                        return ResponseGenerator::generateResponseWithStatusCode(
+                            ResponseGenerator::generateSuccessResponse([
                                 "data" => [
                                     "discount" => sprintf('%0.2f', $couponDiscount),
                                     "code" => $coupon,
                                     "couponDescription" => $offerDescrption
                                 ],
                                 "message" => "COUPON APPLIED.",
-                            ],
-                            "statusCode" => StatusCodes::OK
-                        ];
+                            ])
+                        );
                     } else {
                         throw ExceptionHelper::error([
                             "statusCode" => StatusCodes::BAD_REQUEST,
@@ -471,17 +454,13 @@ class CouponService
                 );
             }
 
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "couponList" => $couponList
                     ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
             throw ExceptionHelper::error([
                 "message" => "Coupon List Not Found.",

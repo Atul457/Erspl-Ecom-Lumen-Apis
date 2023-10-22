@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Helpers\UtilityHelper;
 use App\Models\Cart;
 use App\Models\Coupon;
@@ -71,7 +72,8 @@ class CartService
         ])->count();
 
         if ($sql)
-            throw ExceptionHelper::alreadyExists([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
                 "message" => "Product Already into Cart"
             ]);
 
@@ -81,7 +83,7 @@ class CartService
                 "status" => 1
             ])
             ->first()
-            ->toArray();
+            ?->toArray();
 
         $shopWeight = 0;
         $shopWeight = $shopWeight + $addedWeightData['weight_in_gram'];
@@ -104,7 +106,7 @@ class CartService
                 ->first();
 
             if (!$productWeightData)
-                throw ExceptionHelper::somethingWentWrong();
+                throw ExceptionHelper::error();
 
             $productWeightData = $productWeightData->toArray();
 
@@ -112,7 +114,8 @@ class CartService
         }
 
         if ($shopWeight > $sqlhomeData['weight_capping'])
-            throw ExceptionHelper::unprocessable([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::VALIDATION_ERROR,
                 "message" => "You can't add more than " . ($sqlhomeData['weight_capping'] / 1000) . " KG from single shop",
                 "data" => [
                     "status" => 3
@@ -129,7 +132,7 @@ class CartService
         ]);
 
         if (!$inserted)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "data" => [
                     "status" => 2
                 ]
@@ -153,22 +156,18 @@ class CartService
             ]);
 
         if (!$sqlOfferBundle->count())
-            return [
-                "response" => [
-                    "data" => null,
-                    "status" =>  true,
-                    "statusCode" => StatusCodes::OK,
-                    "messsage" => "Item added to cart"
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
+                    "message" => "Item added to cart"
+                ])
+            );
 
         $offerBundleData = $sqlOfferBundle
             ->get()
             ->toArray();
 
         if (!count($offerBundleData))
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
         else
             $offerBundleData = $offerBundleData[0];
 
@@ -180,7 +179,7 @@ class CartService
             ]);
 
         if (!$sqlShopProduct->count())
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
         $shopProductData = $sqlShopProduct
             ->first()
@@ -252,7 +251,7 @@ class CartService
             }
         }
 
-        throw ExceptionHelper::somethingWentWrong();
+        throw ExceptionHelper::error();
     }
 
 
@@ -267,15 +266,11 @@ class CartService
             "user_id" => $req->user()->id
         ])->delete();
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Cart Cleared.",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -314,7 +309,8 @@ class CartService
                 ->where("qty", ">", 0);
 
             if (!$sql->count())
-                throw ExceptionHelper::notFound([
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
                     "message" => "Order Not Found.",
                     "data" => [
                         "status" => 2
@@ -326,17 +322,15 @@ class CartService
             if ($sqlDelete->count()) {
 
                 $data = $sqlDelete->first();
-                return [
-                    "response" => [
+
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "data" => [
                             "status" => 4
                         ],
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
                         "message" => "Your cart contains products. Do you want to replace?",
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
 
                 $sql = $sql->get()->toArray();
@@ -352,19 +346,16 @@ class CartService
                     ]);
 
                     if ($sqlInsert)
-                        return [
-                            "response" => [
+                        return ResponseGenerator::generateResponseWithStatusCode(
+                            ResponseGenerator::generateSuccessResponse([
                                 "data" => [
                                     "status" => 1
                                 ],
-                                "status" => true,
-                                "statusCode" => StatusCodes::OK,
                                 "message" => "Item add to cart.",
-                            ],
-                            "statusCode" => StatusCodes::OK
-                        ];
+                            ])
+                        );
                     else
-                        throw ExceptionHelper::somethingWentWrong([
+                        throw ExceptionHelper::error([
                             "message" => "Someting went Wrong. Try Again.",
                             "data" => [
                                 "status" => 2
@@ -379,7 +370,8 @@ class CartService
                 ->toArray();
 
             if (!count($sql))
-                throw ExceptionHelper::notFound([
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
                     "message" => "Order Not Found.",
                     "data" => [
                         "status" => 2
@@ -391,17 +383,15 @@ class CartService
             if ($sqlDelete->count()) {
 
                 $data = $sqlDelete->first();
-                return [
-                    "response" => [
+
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "data" => [
                             "status" => 4
                         ],
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
                         "message" => "Your cart contains products. Do you want to replace?",
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             } else {
 
                 foreach ($checkData as $data) {
@@ -415,19 +405,16 @@ class CartService
                     ]);
 
                     if ($sqlInsert)
-                        return [
-                            "response" => [
+                        return ResponseGenerator::generateResponseWithStatusCode(
+                            ResponseGenerator::generateSuccessResponse([
                                 "data" => [
                                     "status" => 1
                                 ],
-                                "status" => true,
-                                "statusCode" => StatusCodes::OK,
                                 "message" => "Item add to cart.",
-                            ],
-                            "statusCode" => StatusCodes::OK
-                        ];
+                            ])
+                        );
                     else
-                        throw ExceptionHelper::somethingWentWrong([
+                        throw ExceptionHelper::error([
                             "message" => "Someting went Wrong. Try Again.",
                             "data" => [
                                 "status" => 2
@@ -437,15 +424,9 @@ class CartService
             }
         }
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "message" => null,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([])
+        );
     }
 
 
@@ -478,6 +459,9 @@ class CartService
         $weight    = $data['weight'];
         $qty       = $data['qty'];
 
+        $offerDiscount = 0;
+        $cartList = array();
+
         $sql = Cart::where([
             "user_id" => $userId,
             "shop_id" => $shopId,
@@ -485,7 +469,7 @@ class CartService
         ]);
 
         $sqlhome = Home::select("weight_capping")->first();
-        $sqlhomeData = $sqlhome->toArray();
+        $sqlhomeData = $sqlhome?->toArray() ?? [];
 
         if ($sql->count() === 0 &&  $qty > 0) {
 
@@ -498,19 +482,20 @@ class CartService
             ]);
 
             if ($sql)
-                return [
-                    "response" => [
+                return ResponseGenerator::generateResponseWithStatusCode(
+                    ResponseGenerator::generateSuccessResponse([
                         "data" => [
                             "status" => 1
                         ],
-                        "status" => true,
-                        "statusCode" => StatusCodes::OK,
                         "message" => "Item added to cart",
-                    ],
-                    "statusCode" => StatusCodes::OK
-                ];
+                    ])
+                );
             else
-                throw ExceptionHelper::somethingWentWrong();
+                throw ExceptionHelper::error([
+                    "data" => [
+                        "status" => 2
+                    ]
+                ]);
         } else {
 
             $sql = Cart::where([
@@ -535,16 +520,16 @@ class CartService
                 if ($addedWeightData)
                     $addedWeightData = $addedWeightData->toArray();
                 else
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "product with id: $productId and status: 1 not found"
                     ]);
 
                 $shopWeight = $shopWeight + ($qty * $addedWeightData['weight_in_gram']);
+
                 $sqlCartShop = Cart::where([
                     "user_id" => $userId,
                     "shop_id" => $shopId,
-                ])
-                    ->where("product_id", "!=", $productId)
+                ])->where("product_id", "!=", $productId)
                     ->get()
                     ->toArray();
 
@@ -560,22 +545,19 @@ class CartService
                     if ($productWeightData)
                         $productWeightData = $productWeightData->toArray();
                     else
-                        throw ExceptionHelper::somethingWentWrong();
+                        throw ExceptionHelper::error();
 
                     $shopWeight = $shopWeight + ($productWeightData['weight_in_gram'] * $cartShopData['qty']);
 
                     if ($shopWeight > $sqlhomeData['weight_capping'])
-                        return [
-                            "response" => [
+                        return ResponseGenerator::generateResponseWithStatusCode(
+                            ResponseGenerator::generateSuccessResponse([
                                 "data" => [
                                     "status" => 2
                                 ],
-                                "status" => true,
-                                "statusCode" => StatusCodes::OK,
                                 "message" => "You can't add more than " . ($sqlhomeData['weight_capping'] / 1000) . " KG from single shop",
-                            ],
-                            "statusCode" => StatusCodes::OK
-                        ];
+                            ])
+                        );
                     else {
 
                         $sql = Cart::where([
@@ -597,7 +579,7 @@ class CartService
                             $offerProductData = $sqlOfferProduct->first();
 
                             if (!$offerProductData)
-                                throw ExceptionHelper::somethingWentWrong();
+                                throw ExceptionHelper::error();
                             else
                                 $offerProductData = $offerProductData->toArray();
 
@@ -630,7 +612,6 @@ class CartService
                                     else
                                         $realPrice = $shopProductData['price'];
 
-                                    $offerDiscount = 0;
                                     $offerDiscount = $offerDiscount + ($realPrice - $offerBundleData['offer_amount']);
 
                                     $sqlCartCheck = Cart::select("id", "qty")
@@ -712,21 +693,167 @@ class CartService
                                 }
                             }
 
-                            return [
-                                "response" => [
+                            return ResponseGenerator::generateResponseWithStatusCode(
+                                ResponseGenerator::generateSuccessResponse([
                                     "data" => [
                                         "status" => 3,
                                         "cartSubtotal" => $cartTotal,
                                         "subTotal" => $subTotal,
                                         "subTotal" => $subTotal,
                                     ],
-                                    "status" => true,
-                                    "statusCode" => StatusCodes::OK,
                                     "message" => "CART UPDATED",
-                                ],
-                                "statusCode" => StatusCodes::OK
-                            ];
+                                ])
+                            );
                         }
+                    }
+                }
+
+                if ($shopWeight > $sqlhomeData['weight_capping']) {
+                    return ResponseGenerator::generateResponseWithStatusCode(
+                        ResponseGenerator::generateSuccessResponse([
+                            "data" => [
+                                "status" => 2
+                            ],
+                            "message" => "You can't add more than " . ($sqlhomeData['weight_capping'] / 1000) . " KG from single shop",
+                        ])
+                    );
+                } else {
+
+                    $whereQuery = Cart::where('user_id', $userId)
+                        ->where('shop_id', $shopId)
+                        ->where('product_id', $productId);
+
+                    $cartItem = $whereQuery->first();
+
+                    if ($cartItem) {
+
+                        $whereQuery->update(['qty' => $qty]);
+
+                        $offerProductData = Product::select('unique_code', 'weight', 'price', 'sellingprice')
+                            ->where('id', $productId)
+                            ->first()
+                            ?->toArray();
+
+                        if (!$offerProductData)
+                            throw ExceptionHelper::error([
+                                "message" => "tbl_product row not found where id: $productId"
+                            ]);
+
+                        $sqlOfferBundle = OfferBundling::where('primary_unique_id', $offerProductData["unique_code"])
+                            ->where('status', 1);
+
+                        if ($sqlOfferBundle->count() > 0) {
+
+                            $offerBundleData = $sqlOfferBundle
+                                ->first()
+                                ->toArray();
+
+                            $sqlShopProduct = Product::select('id', 'weight', 'price', 'sellingprice')
+                                ->where('shop_id', $shopId)
+                                ->where('unique_code', $offerBundleData['offer_unique_id'])
+                                ->where('status', 1);
+
+                            if ($sqlShopProduct->count() > 0) {
+
+                                $shopProductData = $sqlShopProduct
+                                    ->first()
+                                    ->toArray();
+
+                                if ($shopProductData['price'] == 0) {
+                                    $realPrice = $shopProductData['sellingprice'];
+                                } else {
+                                    $realPrice = $shopProductData['price'];
+                                }
+
+                                $offerDiscount = $offerDiscount + ($realPrice - $offerBundleData['offer_amount']);
+
+                                $sqlCartCheck = Cart::select('id', 'qty')
+                                    ->where('product_id', $shopProductData["id"])
+                                    ->where('shop_id', $shopId)
+                                    ->where('user_id', $userId);
+
+                                if ($sqlCartCheck->count() > 0) {
+                                    Cart::where('product_id', $shopProductData["id"])
+                                        ->where('shop_id', $shopId)
+                                        ->where('user_id', $userId)
+                                        ->update(['qty' => $qty, 'offer_type' => 1]);
+                                } else {
+                                    Cart::insert([
+                                        'product_id' => $shopProductData["id"],
+                                        'shop_id' => $shopId,
+                                        'user_id' => $userId,
+                                        'weight' => $shopProductData->weight . ' ' . CommonHelper::uomName($shopProductData["unit_id"]),
+                                        'qty' => $qty,
+                                    ]);
+                                }
+                            }
+                        }
+
+                        $sql = Cart::select("*")
+                            ->where("user_id", $userId)
+                            ->get()
+                            ->toArray();
+
+                        $cartTotal = 0;
+                        $subTotal = 0;
+
+                        foreach ($sql as $sqlData) {
+
+                            $sqlProduct = Product::select('id', 'name', 'price', 'sellingprice', 'image')
+                                ->where('id', $sqlData['product_id'])
+                                ->where('status', 1)
+                                ->get()
+                                ->toArray();
+
+                            $count = count($sqlProduct);
+
+                            if ($count > 0) {
+
+                                foreach ($sqlProduct as $sqlProductData) {
+                                    $productImage   = explode("$", $sqlProductData['image']);
+
+                                    if ($sqlProductData['price'] == 0) {
+                                        $price = $sqlProductData['sellingprice'];
+                                    } else {
+                                        $price = $sqlProductData['price'];
+                                    }
+
+                                    $cartList[] = array(
+                                        "shopId" => $sqlData['shop_id'],
+                                        "productId" => $sqlProductData['id'],
+                                        "productName" => $sqlProductData['name'],
+                                        "price" => $price,
+                                        "sellingprice" => $sqlProductData['sellingprice'],
+                                        "productImage" => url("/products") . "/" . $productImage[0],
+                                        "qty" => $sqlData['qty'],
+                                        "total" => $price * $sqlData['qty']
+                                    );
+
+                                    $cartTotal = $cartTotal + ($price * $sqlData['qty']);
+
+                                    if ($sqlData['offer_type'] == 0) {
+                                        $subTotal = $subTotal + ($price * $sqlData['qty']);
+                                    }
+                                }
+                            }
+                        }
+
+                        return ResponseGenerator::generateResponseWithStatusCode(
+                            ResponseGenerator::generateSuccessResponse([
+                                "data" => [
+                                    'status' => 3,
+                                    "cartSubtotal" => $cartTotal,
+                                    'subTotal' => $subTotal
+                                ],
+                                "message" => "CART UPDATED",
+                            ])
+                        );
+                    } else {
+                        throw ExceptionHelper::error([
+                            "data" => [
+                                "status" => 2
+                            ],
+                        ]);
                     }
                 }
             } else {
@@ -746,7 +873,7 @@ class CartService
                         ->first();
 
                     if (!$productData)
-                        throw ExceptionHelper::somethingWentWrong();
+                        throw ExceptionHelper::error();
 
                     $sqlOfferBundle = OfferBundling::select("*")
                         ->where([
@@ -842,21 +969,18 @@ class CartService
                         }
                     }
 
-                    return [
-                        "response" => [
+                    return ResponseGenerator::generateResponseWithStatusCode(
+                        ResponseGenerator::generateSuccessResponse([
                             "data" => [
                                 "status" => 3,
                                 "cartSubtotal" => $cartTotal,
                                 "subTotal" => $subTotal
                             ],
-                            "status" => true,
-                            "statusCode" => StatusCodes::OK,
                             "message" => "Product Removed",
-                        ],
-                        "statusCode" => StatusCodes::OK
-                    ];
+                        ])
+                    );
                 } else
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "data" => [
                             "status" => 2
                         ]
@@ -900,7 +1024,8 @@ class CartService
         ]);
 
         if ($sql->count())
-            throw ExceptionHelper::alreadyExists([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::RESOURCE_ALREADY_EXISTS,
                 "message" => "Product Already into Cart",
                 "data" => [
                     "status" => 3
@@ -916,19 +1041,16 @@ class CartService
         ]);
 
         if (!$sql)
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "status" => 1
                 ],
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
                 "message" => "Item added to cart",
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -964,10 +1086,11 @@ class CartService
         $latitude = $data['latitude'] ?? "";
         $longitude = $data['longitude'] ?? "";
         $distanceStatus = 1;
-        $skuOffer = 0;
         $priceOffer  = 0;
         $shopIds = "";
         $dmsg = "";
+        $storeStatus = null;
+        $msg = null;
 
         $sqlhome = Home::select("shop_range", "weight_capping", "order_capping", "shop_capping", "delivery_type", "delivery_charge", "minimum_value", "wallet_status", "prepaid_status", "packing_charge");
 
@@ -982,7 +1105,7 @@ class CartService
         if ($sqlRegData)
             $sqlRegData = $sqlRegData->toArray();
         else
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "Registration wallet details not found"
             ]);
 
@@ -997,7 +1120,8 @@ class CartService
             ->orderBy("shop_id");
 
         if (!$sql->count())
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Cart Not Found",
                 "data" => [
                     "walletBalance" => round($walletBalance),
@@ -1012,7 +1136,6 @@ class CartService
         $tqty = 0;
         $mrpTotal = 0.00;
         $offerTotal = 0.00;
-        $priceOfferProductId = "";
         $offerAvailStatus = 0;
         $weightExceed = 0;
         $cartWeight = 0;
@@ -1032,7 +1155,7 @@ class CartService
             $sqlShopData = $sqlShop->first();
 
             if (!$sqlShopData)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "Shop with id:" . $sqlData['shop_id'] . " not found"
                 ]);
             else
@@ -1052,7 +1175,7 @@ class CartService
                 $sqlTimeData = $sqlTime->first();
 
                 if (!$sqlTimeData)
-                    throw ExceptionHelper::somethingWentWrong([
+                    throw ExceptionHelper::error([
                         "message" => "ShopTime with shop id: " . $sqlData['shop_id'] . " not found"
                     ]);
 
@@ -1522,7 +1645,8 @@ class CartService
                         $usedCount = $sqlOrder->count();
 
                         if ($usedCount >= $sqlCouponData1['time_to_use'])
-                            throw ExceptionHelper::unprocessable([
+                            throw ExceptionHelper::error([
+                                "statusCode" => StatusCodes::VALIDATION_ERROR,
                                 "message" => "YOU ARE ALREADY AVAIL THIS OFFER."
                             ]);
                         else {
@@ -1537,21 +1661,19 @@ class CartService
                                 } else
                                     $couponDiscount = $sqlCouponData1['discount'];
 
-                                return [
-                                    "response" => [
+                                return ResponseGenerator::generateResponseWithStatusCode(
+                                    ResponseGenerator::generateSuccessResponse([
                                         "data" => [
                                             "code" => $coupon,
                                             "discount" => $couponDiscount,
                                             "couponDescription" => $offerDescrption
                                         ],
-                                        "status" => true,
-                                        "statusCode" => StatusCodes::OK,
                                         "message" => "COUPON APPLIED.",
-                                    ],
-                                    "statusCode" => StatusCodes::OK
-                                ];
+                                    ])
+                                );
                             } else
-                                throw ExceptionHelper::unprocessable([
+                                throw ExceptionHelper::error([
+                                    "statusCode" => StatusCodes::VALIDATION_ERROR,
                                     "message" => "Minimun Order Value To Apply This Coupon is " . $sqlCouponData1['minimum_value'] . "/-"
                                 ]);
                         }
@@ -1567,26 +1689,25 @@ class CartService
                             } else
                                 $couponDiscount = $sqlCouponData1['discount'];
 
-                            return [
-                                "response" => [
+                            return ResponseGenerator::generateResponseWithStatusCode(
+                                ResponseGenerator::generateSuccessResponse([
                                     "data" => [
                                         "discount" => $couponDiscount,
                                         "code" => $coupon,
                                         "couponDescription" => $offerDescrption
                                     ],
-                                    "status" => true,
-                                    "statusCode" => StatusCodes::OK,
                                     "message" => "COUPON APPLIED.",
-                                ],
-                                "statusCode" => StatusCodes::OK
-                            ];
+                                ])
+                            );
                         } else
-                            throw ExceptionHelper::unprocessable([
+                            throw ExceptionHelper::error([
+                                "statusCode" => StatusCodes::VALIDATION_ERROR,
                                 "message" => "Minimun Order Value To Apply This Coupon is " . $sqlCouponData1['minimum_value'] . "/-"
                             ]);
                     }
                 } else
-                    throw ExceptionHelper::unAuthorized([
+                    throw ExceptionHelper::error([
+                        "statusCode" => StatusCodes::UNAUTHORIZED,
                         "message" => "This coupon code is invalid or has expired."
                     ]);
             }
@@ -1611,7 +1732,7 @@ class CartService
                 ->first();
 
             if (!$priceProductCheckData)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "Product with id: " . $priceOfferCartData['product_id'] . " not found"
                 ]);
 
@@ -1626,7 +1747,7 @@ class CartService
             $priceOfferCheckData = $sqlPriceOfferCheck->first();
 
             if (!$priceOfferCheckData)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "OfferPriceBundling with offer_unique_id: " .  $priceProductCheckData['unique_code'] . " and status: 1 not found"
                 ]);
 
@@ -1695,7 +1816,7 @@ class CartService
             $productPriceCartData = $sqlProductPriceCart->first();
 
             if (!$productPriceCartData)
-                throw ExceptionHelper::somethingWentWrong([
+                throw ExceptionHelper::error([
                     "message" => "Product with id: " . $offerCartData['product_id'] . " not found"
                 ]);
 
@@ -1809,39 +1930,26 @@ class CartService
                 "cartImage2" => $cartImage2
             );
 
-            return [
-                "response" => [
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => $arr,
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
-
+                ])
+            );
         } else
-            return [
-                "response" => [
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "walletBalance" => round($walletBalance),
                         "walletStatus" => $sqlhomeData['wallet_status']
                     ],
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
                     "message" => "Cart Empty.",
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
 
-
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $data,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
-                "message" => null,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 }

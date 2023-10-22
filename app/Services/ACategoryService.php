@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Constants\StatusCodes;
+use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\ACategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -40,16 +42,55 @@ class ACategoryService
             ->get()
             ->toArray();
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "categories" => $categories
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
+    }
+
+
+
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /**
+     * @todo Document this
+     */
+    public function searchCategoryList(Request $req)
+    {
+
+        $sqlProduct = ACategory::select("*")
+            ->where([
+                "status" => 1,
+                "industries_id" => 1
+            ]);
+
+        $count = $sqlProduct->count();
+
+        if ($count > 0) {
+
+            $sqlProduct = $sqlProduct
+                ->get()
+                ->toArray();
+
+            $categorylist = array();
+
+            foreach ($sqlProduct as $sqlProductData) {
+                $categorylist[] = array("categoryName" => $sqlProductData['name']);
+            }
+
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
+                    "data" => [
+                        "categorylist" => $categorylist
+                    ]
+                ])
+            );
+        } else {
+            throw ExceptionHelper::error([
+                "message" => "Category List Not Found."
+            ]);
+        }
     }
 }

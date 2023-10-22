@@ -6,6 +6,7 @@ use App\Constants\StatusCodes;
 use App\Helpers\CommonHelper;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Helpers\UtilityHelper;
 use App\Models\ACategory;
 use App\Models\Cart;
@@ -196,24 +197,22 @@ class ShopService
             }
 
             if (!$loop)
-                throw ExceptionHelper::notFound([
+                throw ExceptionHelper::error([
+                    "statusCode" => StatusCodes::NOT_FOUND,
                     "message" => "Sorry, we couldn't find any store in your area."
                 ]);
 
-            return [
-                "response" => [
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "shopList" => $shopList
-                    ],
-                    "status" =>  true,
-                    "statusCode" => StatusCodes::OK,
-                    "messsage" => null
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                    ]
+                ])
+            );
         }
 
-        throw ExceptionHelper::notFound([
+        throw ExceptionHelper::error([
+            "statusCode" => StatusCodes::NOT_FOUND,
             "message" => "Sorry, we couldn't find any store what you're looking for."
         ]);
     }
@@ -362,7 +361,8 @@ class ShopService
         ];
 
         if (!$loop)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "data" => array_merge(
                     $commonData,
                     ['productCount' => "0 Products"],
@@ -377,17 +377,13 @@ class ShopService
             ]
         );
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "data" => $arr
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -423,7 +419,8 @@ class ShopService
             ->toArray();
 
         if (!count($shops))
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Sorry, we couldn't find any store what you're looking for."
             ]);
 
@@ -538,21 +535,18 @@ class ShopService
         }
 
         if (!$matchCount)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Sorry, we couldn't find any store what you're looking for."
             ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "shopList" => $shopList
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -590,21 +584,18 @@ class ShopService
             ->first();
 
         if (!$sqlProductData)
-            throw ExceptionHelper::notFound([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::NOT_FOUND,
                 "message" => "Product Not Found."
             ]);
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "productId" => $sqlProductData["id"]
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -644,17 +635,13 @@ class ShopService
             );
         }
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "categorylist" => $productlist
                 ],
-                "message" => null,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -777,17 +764,14 @@ class ShopService
                 ]
             ]);
 
-        return [
-            "response" => [
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => $arr["msg"],
                 "data" => [
                     "msg1" => $arr["msg"]
                 ]
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -836,17 +820,13 @@ class ShopService
         }
 
         if ($count > 0) {
-            return [
-                "response" => [
-                    "status" => true,
-                    "statusCode" => StatusCodes::OK,
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
                     "data" => [
                         "reviewList" => $reviewList
                     ],
-                    "message" => null,
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+                ])
+            );
         } else {
             throw ExceptionHelper::error([
                 "statusCode" => StatusCodes::NOT_FOUND,

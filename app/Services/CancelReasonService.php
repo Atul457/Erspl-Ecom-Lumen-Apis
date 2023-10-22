@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
+use App\Helpers\ResponseGenerator;
 use App\Models\CancelReason;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,18 +27,14 @@ class CancelReasonService
             ->toArray();
 
         if (!count($reasonList))
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
-        return [
-            "response" => [
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "reasonList" => $reasonList
                 ],
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => null
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 }

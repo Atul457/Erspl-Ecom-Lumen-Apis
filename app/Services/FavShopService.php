@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Helpers\UtilityHelper;
 use App\Models\FavShop;
 use App\Models\Rating;
@@ -48,7 +49,8 @@ class FavShopService
             ->count() > 1;
 
         if ($alreadyAdded)
-            throw ExceptionHelper::unAuthorized([
+            throw ExceptionHelper::error([
+                "statusCode" => StatusCodes::UNAUTHORIZED,
                 "message" => "Already added to favourite."
             ]);
 
@@ -59,19 +61,15 @@ class FavShopService
         ]);
 
         if (!$inserted)
-            throw ExceptionHelper::somethingWentWrong([
+            throw ExceptionHelper::error([
                 "message" => "Already added to favourite."
             ]);
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Added To favourite Shops."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
+                "message" => "Added To favourite Shops."
+            ])
+        );
     }
 
 
@@ -101,17 +99,13 @@ class FavShopService
         ])->delete();
 
         if (!$deleted)
-            throw ExceptionHelper::somethingWentWrong();
+            throw ExceptionHelper::error();
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Removed From favourite."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
+                "message" => "Removed From favourite."
+            ])
+        );
     }
 
 
@@ -273,17 +267,13 @@ class FavShopService
                     $columns = array_column($shopList, 'distance2');
                     array_multisort($columns, SORT_ASC, $shopList);
 
-                    return [
-                        "response" => [
-                            "status" => true,
-                            "statusCode" => StatusCodes::OK,
+                    return ResponseGenerator::generateResponseWithStatusCode(
+                        ResponseGenerator::generateSuccessResponse([
                             "data" => [
                                 "shopList" => $shopList
                             ],
-                            "message" => null,
-                        ],
-                        "statusCode" => StatusCodes::OK
-                    ];
+                        ])
+                    );
                 }
             }
 

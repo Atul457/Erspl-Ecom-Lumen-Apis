@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Rating;
 use Illuminate\Http\Request;
 
@@ -65,19 +66,15 @@ class RatingService
                 ]);
 
             if (!$updated)
-                ExceptionHelper::somethingWentWrong([
+                ExceptionHelper::error([
                     "message" => "Can't Update Rating."
                 ]);
 
-            return [
-                "response" => [
-                    "data" => null,
-                    "status" =>  true,
-                    "statusCode" => StatusCodes::OK,
-                    "messsage" => "Rating Updated."
-                ],
-                "statusCode" => StatusCodes::OK
-            ];
+            return ResponseGenerator::generateResponseWithStatusCode(
+                ResponseGenerator::generateSuccessResponse([
+                    "message" => "Rating Updated."
+                ])
+            );
         }
 
         $inserted = Rating::insert([
@@ -93,18 +90,14 @@ class RatingService
         ]);
 
         if (!$inserted)
-            ExceptionHelper::somethingWentWrong([
+            ExceptionHelper::error([
                 "message" => "Something went wrong. Try Again."
             ]);
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" =>  true,
-                "statusCode" => StatusCodes::OK,
-                "messsage" => "Rating Submitted."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
+                "message" => "Rating Submitted."
+            ])
+        );
     }
 }

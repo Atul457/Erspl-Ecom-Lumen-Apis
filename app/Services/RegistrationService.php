@@ -6,9 +6,11 @@ use App\Constants\StatusCodes;
 use App\Helpers\ExceptionHelper;
 use App\Helpers\OTPHelper;
 use App\Helpers\RequestValidator;
+use App\Helpers\ResponseGenerator;
 use App\Models\Home;
 use App\Models\Registration;
 use App\Models\WrongReg;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -149,23 +151,16 @@ class RegistrationService
                                 else
                                     OTPHelper::sendOTP($otp, $mobile);
 
-                                $updated = Registration::where("mobile", $mobile)->update([
+                                Registration::where("mobile", $mobile)->update([
                                     "otp" => $otp,
                                     "token_id" => $tokenId
                                 ]);
 
-                                if (!$updated)
-                                    throw ExceptionHelper::error();
-
-                                return [
-                                    "response" => [
-                                        "data" => null,
-                                        "status" =>  true,
-                                        "statusCode" => StatusCodes::OK,
-                                        "messsage" => "OTP Sent Successfully."
-                                    ],
-                                    "statusCode" => StatusCodes::OK
-                                ];
+                                return ResponseGenerator::generateResponseWithStatusCode(
+                                    ResponseGenerator::generateSuccessResponse([
+                                        "message" => "OTP Sent Successfully."
+                                    ])
+                                );
                             }
 
                             if (!Hash::check($password, $user->password))
@@ -189,22 +184,18 @@ class RegistrationService
                                 "tInfo_temp" => $token
                             ]);
 
-                            return [
-                                "response" => [
-                                    "data" => null,
-                                    "status" => true,
-                                    "statusCode" => 200,
+                            return ResponseGenerator::generateResponseWithStatusCode(
+                                ResponseGenerator::generateSuccessResponse([
                                     "data" => [
                                         "token" => $token,
                                     ],
-                                ],
-                                "statusCode" => StatusCodes::OK
-                            ];
+                                ])
+                            );
                         }
                     } else {
 
                         $secs = $differenceInSeconds % 60;
-                        $hrs  = (int)($differenceInSeconds / 3600); 
+                        $hrs  = (int)($differenceInSeconds / 3600);
                         $mins = (int)(($differenceInSeconds % 3600) / 60);
                         $remTimeMinutes = sprintf('%02d', $mins);
                         $remTimeSeconds = sprintf('%02d', $secs);
@@ -248,19 +239,15 @@ class RegistrationService
     /**
      * @TODO Document this
      */
-    public function logout(Request $req)
+    public function logout()
     {
         auth()->logout();
 
-        return [
-            "response" => [
-                "data" => null,
-                "status" => true,
-                "statusCode" => StatusCodes::OK,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "message" => "Logged out successfully"
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -327,15 +314,12 @@ class RegistrationService
 
         $response["token"] = $token;
 
-        return [
-            "response" => [
-                "status" => true,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $response,
-                "statusCode" => StatusCodes::OK,
                 "message" => "Logged in successfully."
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -359,15 +343,11 @@ class RegistrationService
         unset($profileData["tInfo_temp"]);
         unset($profileData["suspended_datetime"]);
 
-        return [
-            "response" => [
-                "status" => true,
-                "message" => null,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => $profileData,
-                "statusCode" => StatusCodes::OK,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 
 
@@ -399,9 +379,7 @@ class RegistrationService
             throw ExceptionHelper::error([
                 "statusCode" => StatusCodes::UNAUTHORIZED,
                 "message" => "Invalid token sent",
-                "data" => [
-                    "token" => $whereQuery["tInfo_temp"]
-                ]
+                "data" => null
             ]);
 
         auth()->logout();
@@ -413,16 +391,12 @@ class RegistrationService
                 "tInfo_temp" => $token
             ]);
 
-        return [
-            "response" => [
-                "status" => true,
-                "message" => null,
+        return ResponseGenerator::generateResponseWithStatusCode(
+            ResponseGenerator::generateSuccessResponse([
                 "data" => [
                     "token" => $token
                 ],
-                "statusCode" => StatusCodes::OK,
-            ],
-            "statusCode" => StatusCodes::OK
-        ];
+            ])
+        );
     }
 }
